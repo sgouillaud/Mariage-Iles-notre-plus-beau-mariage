@@ -152,7 +152,7 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 
 /* ===== ANIMATIONS ===== */
 /* 1. La vague d'ouverture (dessinée par intro.js) */
-.maree{position:fixed;inset:0;width:100%;height:100%;z-index:100;pointer-events:none;display:block}
+.maree{position:fixed;inset:0;width:100%;height:100%;z-index:100;display:block;cursor:pointer;touch-action:none}
 
 /* 2. Le logo se pose comme un tampon, le texte monte doucement */
 .js .anim-stamp{opacity:0}
