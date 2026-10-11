@@ -53,19 +53,17 @@
       return a2.finished;
     }).then(() => { bot.firstChild.textContent = car; ftop.firstChild.textContent = car; });
   }
-  // Fait défiler une cellule de caractère en caractère jusqu'à la cible, comme un vrai tableau
-  async function defiler(c, cible, delai) {
-    await new Promise((r) => setTimeout(r, delai));
+  const hasard = (jeu) => jeu[Math.floor(Math.random() * jeu.length)];
+  const LETTRES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const CHIFFRES = '0123456789';
+  // Suspense : la palette bat au hasard jusqu'à son heure, puis s'arrête sur la bonne lettre
+  async function brasser(c, cible, verrou, jeu) {
     if (reduit) { poser(c, cible); return; }
+    while (performance.now() < verrou) await palette(c, hasard(jeu), 70);
     let fin = JEU.indexOf(cible);
     if (fin < 0) fin = 0;
-    let i = (fin - 6 - Math.floor(Math.random() * 9) + JEU.length) % JEU.length;
-    poser(c, JEU[i]);
-    let pas = 0;
-    while (i !== fin && pas < 60) {
-      i = (i + 1) % JEU.length; pas++;
-      await palette(c, JEU[i], 70);
-    }
+    let i = (fin - 2 - Math.floor(Math.random() * 3) + JEU.length) % JEU.length;
+    while (i !== fin) { i = (i + 1) % JEU.length; await palette(c, JEU[i], 90); }
   }
   function preparer(el) {
     const n = Number(el.dataset.len);
@@ -77,11 +75,9 @@
     }
     return [...el.children];
   }
-  function afficherTexte(el, texte, delai0, alignDroite) {
-    const cells = el.cells || (el.cells = preparer(el));
-    const n = cells.length;
-    const t = (alignDroite ? texte.padStart(n, ' ') : texte.padEnd(n, ' ')).slice(0, n).toUpperCase();
-    return Promise.all(cells.map((c, k) => defiler(c, t[k], delai0 + k * 70)));
+  function texteCellules(el, texte, alignDroite) {
+    const n = el.cells.length;
+    return (alignDroite ? texte.padStart(n, ' ') : texte.padEnd(n, ' ')).slice(0, n).toUpperCase();
   }
   function joursRestants() {
     const p = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -98,11 +94,20 @@
     const unite = j > 1 ? 'JOURS' : 'JOUR';
     const statut = j > 0 ? "À L'HEURE" : j === 0 ? 'EMBARQUEMENT' : 'ARRIVÉ';
     $('#board').setAttribute('aria-label', `Tableau des départs : vol IL 2627 pour Cloyes-les-Trois-Rivières, départ dans ${jours} ${unite.toLowerCase()}, ${statut.toLowerCase()}`);
-    afficherTexte($('#flaps-dest1'), 'CLOYES LES', 300);
-    afficherTexte($('#flaps-dest2'), 'TROIS RIVIÈRES', 450);
-    afficherTexte($('#flaps-jours'), jours, 500, true);
-    afficherTexte($('#flaps-unite'), unite, 800);
-    afficherTexte($('#flaps-statut'), statut, 1100);
+    const t0 = performance.now();
+    // Calendrier du suspense (ms après le début) : la destination, puis les jours chiffre par chiffre
+    const lignes = [
+      [$('#flaps-dest1'), 'CLOYES LES', false, LETTRES, (k) => 1700 + k * 110],
+      [$('#flaps-dest2'), 'TROIS RIVIÈRES', false, LETTRES, (k) => 2700 + k * 110],
+      [$('#flaps-jours'), jours, true, CHIFFRES, (k) => 4300 + k * 650],
+      [$('#flaps-unite'), unite, false, LETTRES, (k) => 6100 + k * 90],
+      [$('#flaps-statut'), statut, false, LETTRES, (k) => 6700 + k * 80],
+    ];
+    const fins = lignes.map(([el, texte, droite, jeu, heure]) => {
+      const t = texteCellules(el, texte, droite);
+      return Promise.all(el.cells.map((c, k) => brasser(c, t[k], t0 + heure(k), jeu)));
+    });
+    fins[4].then(() => $('#board').classList.add('arrive'));
   }
   if (window.ilesGo && window.ilesGo()) lancerTableau();
   else document.addEventListener('iles:go', lancerTableau);

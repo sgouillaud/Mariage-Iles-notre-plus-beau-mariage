@@ -225,7 +225,8 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 @media(min-width:560px){.board-row{flex-direction:row;align-items:center;justify-content:space-between;gap:14px}}
 .board-jours,.board-statut{display:flex;align-items:flex-end;gap:10px}
 .board-statut{align-items:center}
-.voyant{flex:0 0 8px;height:8px;border-radius:50%;background:#5BD08A;box-shadow:0 0 8px #5BD08A;animation:voyant 1.6s ease-in-out infinite}
+.voyant{flex:0 0 8px;height:8px;border-radius:50%;background:#4A433D;transition:background .3s,box-shadow .3s}
+.board.arrive .voyant{background:#5BD08A;box-shadow:0 0 8px #5BD08A;animation:voyant 1.6s ease-in-out infinite}
 @keyframes voyant{0%,100%{opacity:1}50%{opacity:.35}}
 .flaps{display:inline-flex;gap:3px}
 .cell{--w:21px;--h:31px;--fs:21px;position:relative;display:inline-block;width:var(--w);height:var(--h);perspective:220px}
