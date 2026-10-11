@@ -1,0 +1,23 @@
+{
+  "name": "mariage-iles",
+  "version": "1.0.0",
+  "description": "Il.e.s — site d'invitation et RSVP du mariage de Cédric & Sébastien",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js",
+    "dev": "node --env-file=.env server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

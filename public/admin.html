@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex">
+<title>Il.e.s · Tour de contrôle</title>
+<link rel="icon" href="/logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+
+<div id="login" class="login cache">
+  <form id="login-form" class="carte">
+    <img src="/logo.webp" alt="" width="120" height="120">
+    <h1>Tour de contrôle</h1>
+    <p class="sous">Espace réservé aux mariés</p>
+    <label class="f" for="pwd">Mot de passe</label>
+    <input id="pwd" type="password" autocomplete="current-password" required>
+    <p class="erreur" id="login-err"></p>
+    <button class="btn" type="submit">Entrer</button>
+  </form>
+</div>
+
+<div id="app" class="cache">
+  <header class="top">
+    <div class="wrap top-in">
+      <div class="marque"><img src="/logo.webp" alt="" width="40" height="40"><span>Tour de contrôle</span></div>
+      <div class="top-actions">
+        <a href="/" target="_blank" rel="noopener">Voir le site ↗</a>
+        <button id="logout" class="lien">Déconnexion</button>
+      </div>
+    </div>
+    <nav class="wrap onglets" role="tablist">
+      <button class="onglet actif" data-tab="reponses" role="tab">Réponses</button>
+      <button class="onglet" data-tab="infos" role="tab">Infos pratiques</button>
+      <button class="onglet" data-tab="exports" role="tab">Exports</button>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <!-- RÉPONSES -->
+    <section id="tab-reponses" class="tab">
+      <div class="stats" id="stats"></div>
+      <div class="moments" id="moments"></div>
+      <div class="barre">
+        <input type="search" id="recherche" placeholder="Rechercher un nom, un email…">
+        <div class="filtres" id="filtres">
+          <button class="filtre actif" data-f="tous">Tous</button>
+          <button class="filtre" data-f="Oui">Oui</button>
+          <button class="filtre" data-f="Peut-être">Peut-être</button>
+          <button class="filtre" data-f="Non">Non</button>
+          <button class="filtre" data-f="loges">Logés</button>
+          <button class="filtre" data-f="allergies">Allergies</button>
+        </div>
+      </div>
+      <div id="liste" class="liste"></div>
+    </section>
+
+    <!-- INFOS PRATIQUES -->
+    <section id="tab-infos" class="tab cache">
+      <p class="intro">Ces infos s'affichent dans la section « Où nous retrouver » du site. Coche « À venir » pour une info pas encore prête : elle apparaît en pointillés.</p>
+      <div id="infos-liste"></div>
+      <div class="actions">
+        <button class="btn ghost" id="info-ajout">+ Ajouter une info</button>
+        <button class="btn" id="info-save">Enregistrer</button>
+      </div>
+      <p class="ok" id="info-msg"></p>
+    </section>
+
+    <!-- EXPORTS -->
+    <section id="tab-exports" class="tab cache">
+      <div class="carte bloc">
+        <h2>Exports pour Excel</h2>
+        <p>Toutes les réponses, ou seulement la liste des enfants (pratique pour le traiteur et les menus enfants).</p>
+        <div class="actions">
+          <a class="btn" href="/api/admin/export.csv">Toutes les réponses (.csv)</a>
+          <a class="btn ghost" href="/api/admin/export-enfants.csv">Liste des enfants (.csv)</a>
+        </div>
+      </div>
+      <div class="carte bloc">
+        <h2>Sauvegarde</h2>
+        <p>Télécharge une copie complète de la base (réponses + infos pratiques). À faire de temps en temps, et avant toute grosse modification.</p>
+        <div class="actions"><a class="btn ghost" href="/api/admin/backup">Télécharger une sauvegarde (.db)</a></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="/admin.js" defer></script>
+</body>
+</html>
