@@ -1,204 +1,185 @@
-// Intro « la vague » : une eau claire et turquoise vient lécher le sable, une seconde vague recouvre l'écran,
-// puis la mer se retire en dévoilant le site. Environ 6 secondes ; un toucher la fait passer.
-// Jouée une fois par visite ; désactivée si l'appareil demande moins d'animations.
+// Intro « notre itinéraire » : sur une carte de voyage ancienne, un petit avion relie nos îles une à une
+// (Maurice, La Réunion, Guadeloupe, Martinique, les Saintes, Koh Samui, la Corse) jusqu'à Yron.
+// Environ 6 secondes ; un toucher la fait passer. Jouée une fois par visite ;
+// désactivée si l'appareil demande moins d'animations.
 (function () {
   var html = document.documentElement;
   html.classList.add('js');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var seen = false;
-  try { seen = sessionStorage.getItem('maree') === '1'; sessionStorage.setItem('maree', '1'); } catch (e) { /* stockage indisponible */ }
-  function go() { html.classList.add('go'); }
+  try { seen = sessionStorage.getItem('intro') === '1'; sessionStorage.setItem('intro', '1'); } catch (e) { /* stockage indisponible */ }
+  var parti = false;
+  function go() {
+    if (parti) return; parti = true;
+    html.classList.add('go');
+    document.dispatchEvent(new Event('iles:go'));
+  }
+  window.ilesGo = function () { return parti; };
   var secours = setTimeout(go, 9000); // filet de sécurité
 
   if (reduce || seen) { document.addEventListener('DOMContentLoaded', go); return; }
 
+  var NS = 'http://www.w3.org/2000/svg';
+  var ILES = [
+    { nom: 'Île Maurice', x: 262, y: 590, r: 24 },
+    { nom: 'La Réunion', x: 100, y: 548, r: 22 },
+    { nom: 'Guadeloupe', x: 258, y: 462, r: 25, papillon: true },
+    { nom: 'Martinique', x: 92, y: 392, r: 22 },
+    { nom: 'Les Saintes', x: 246, y: 322, r: 9, archipel: true },
+    { nom: 'Koh Samui', x: 98, y: 248, r: 21 },
+    { nom: 'Corse', x: 250, y: 176, r: 23 },
+  ];
+  var YRON = { x: 180, y: 86 };
+
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  // Contour d'île organique (forme stable pour chaque île)
+  function ile(cx, cy, r, graine) {
+    var pts = [], n = 22;
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2;
+      var k = 1 + 0.18 * Math.sin(a * 3 + graine) + 0.1 * Math.sin(a * 5 + graine * 2) + 0.05 * Math.sin(a * 9 + graine);
+      pts.push([cx + Math.cos(a) * r * k * 1.15, cy + Math.sin(a) * r * k * 0.85]);
+    }
+    var d = 'M' + pts[0].join(' ');
+    for (var j = 0; j < n; j++) {
+      var p0 = pts[(j - 1 + n) % n], p1 = pts[j], p2 = pts[(j + 1) % n], p3 = pts[(j + 2) % n];
+      d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6) + ' ' + (p1[1] + (p2[1] - p0[1]) / 6) + ',' +
+        (p2[0] - (p3[0] - p1[0]) / 6) + ' ' + (p2[1] - (p3[1] - p1[1]) / 6) + ',' + p2[0] + ' ' + p2[1];
+    }
+    return d + 'Z';
+  }
+  // Courbe douce passant par tous les points (Catmull-Rom)
+  function route(pts) {
+    var d = 'M' + pts[0].x + ' ' + pts[0].y;
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      d += ' C' + (p1.x + (p2.x - p0.x) / 5) + ' ' + (p1.y + (p2.y - p0.y) / 5) + ',' +
+        (p2.x - (p3.x - p1.x) / 5) + ' ' + (p2.y - (p3.y - p1.y) / 5) + ',' + p2.x + ' ' + p2.y;
+    }
+    return d;
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
-    var c = document.createElement('canvas');
-    c.className = 'maree';
-    c.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(c);
-    var ctx = c.getContext('2d');
-    if (!ctx) { c.remove(); go(); return; }
-    var W, H, dpr = Math.min(2, window.devicePixelRatio || 1);
-    function size() { W = window.innerWidth; H = window.innerHeight; c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
-    size();
-    window.addEventListener('resize', size);
+    var box = document.createElement('div');
+    box.className = 'ouverture';
+    box.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(box);
+    var svg = el('svg', { viewBox: '0 0 360 680', preserveAspectRatio: 'xMidYMid meet' }, box);
 
-    // Grain du sable, avec quelques petits coquillages clairs
-    var grain = document.createElement('canvas'); grain.width = grain.height = 160;
-    var g = grain.getContext('2d');
-    for (var i = 0; i < 1100; i++) {
-      g.fillStyle = Math.random() < 0.55 ? 'rgba(150,110,60,.16)' : 'rgba(255,255,255,.4)';
-      g.fillRect(Math.random() * 160, Math.random() * 160, Math.random() < 0.85 ? 1 : 2, 1);
+    // Mer : petites vaguelettes gravées, rose des vents
+    var mer = el('g', { class: 'i-mer' }, svg);
+    for (var v = 0; v < 26; v++) {
+      var vx = (v * 97) % 330 + 15, vy = (v * 151) % 640 + 25;
+      el('path', { d: 'M' + vx + ' ' + vy + ' q4 -4 8 0 t8 0', class: 'i-vaguelette' }, mer);
     }
-    var grainPat = ctx.createPattern(grain, 'repeat');
+    var rose = el('g', { class: 'i-rose', transform: 'translate(52 92)' }, svg);
+    el('circle', { r: 20 }, rose);
+    el('path', { d: 'M0 -28 L4 0 L0 28 L-4 0 Z M-28 0 L0 -4 L28 0 L0 4 Z' }, rose);
+    var nord = el('text', { y: -32, 'text-anchor': 'middle' }, rose); nord.textContent = 'N';
 
-    var s1 = Math.random() * 6, s2 = Math.random() * 6, s3 = Math.random() * 6;
-    function ligne(px, t, base, amp) {
-      return base + amp * (16 * Math.sin(px * 0.011 + t * 1.5 + s1) + 9 * Math.sin(px * 0.029 - t * 2.1 + s2) + 4 * Math.sin(px * 0.071 + t * 3.2 + s3));
-    }
-    var easeOut = function (k) { return 1 - Math.pow(1 - k, 3); };
-    var easeInOut = function (k) { return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
-    var clamp = function (k) { return Math.max(0, Math.min(1, k)); };
-    var mix = function (a, b, k) { return a + (b - a) * k; };
-
-    // Chronologie (secondes) : clapotis, 1re vague, ressac, 2e vague qui couvre, titre, retrait
-    var K = [
-      [0.0, 0.82], [0.7, 0.80],   // clapotis au bas de l'écran
-      [2.0, 0.34],                // 1re vague monte
-      [2.9, 0.58],                // ressac
-      [4.0, -0.40],               // 2e vague recouvre tout
-      [4.9, -0.40],               // le titre flotte
-      [6.6, 1.25],                // la mer se retire
-    ];
-    var T_RETRAIT = 4.9, T_FIN = 6.7;
-    function niveau(t) {
-      for (var j = 1; j < K.length; j++) {
-        if (t <= K[j][0]) {
-          var k = clamp((t - K[j - 1][0]) / (K[j][0] - K[j - 1][0]));
-          var e = (K[j][1] < K[j - 1][1]) ? easeOut(k) : easeInOut(k); // monte vite, redescend en douceur
-          return mix(K[j - 1][1], K[j][1], e) * H;
-        }
+    // Les îles
+    var groupes = ILES.map(function (p, i) {
+      var g = el('g', { class: 'i-ile' }, svg);
+      if (p.archipel) {
+        el('path', { d: ile(p.x - 9, p.y + 2, 7, i + 1), class: 'i-terre' }, g);
+        el('path', { d: ile(p.x + 6, p.y - 5, 6, i + 3), class: 'i-terre' }, g);
+        el('path', { d: ile(p.x + 4, p.y + 9, 4, i + 5), class: 'i-terre' }, g);
+      } else if (p.papillon) {
+        el('path', { d: ile(p.x - 12, p.y, p.r * 0.62, i + 1), class: 'i-terre' }, g);
+        el('path', { d: ile(p.x + 13, p.y + 2, p.r * 0.55, i + 2), class: 'i-terre' }, g);
+      } else {
+        el('path', { d: ile(p.x, p.y, p.r, i * 1.7 + 1), class: 'i-terre' }, g);
       }
-      return K[K.length - 1][1] * H;
-    }
-
-    var t0 = null, decalage = 0, devoile = false;
-    // Un toucher fait passer directement au retrait de la mer
-    c.addEventListener('pointerdown', function () {
-      if (t0 === null) return;
-      var t = (performance.now() - t0) / 1000 + decalage;
-      if (t < T_RETRAIT) decalage += T_RETRAIT - t;
+      var gauche = p.x > 180;
+      var t = el('text', {
+        x: gauche ? p.x - p.r - 26 : p.x + p.r + 26, y: p.y + 4,
+        'text-anchor': gauche ? 'end' : 'start', class: 'i-nom',
+      }, g);
+      t.textContent = p.nom;
+      return g;
     });
 
-    function chemin(t, base, amp) {
-      ctx.beginPath();
-      ctx.moveTo(-10, ligne(-10, t, base, amp));
-      for (var px = -10; px <= W + 20; px += 8) ctx.lineTo(px, ligne(px, t, base, amp));
-    }
-    function eauChemin(t, base, amp) { chemin(t, base, amp); ctx.lineTo(W + 20, H + 10); ctx.lineTo(-10, H + 10); ctx.closePath(); }
+    // L'itinéraire : pointillés révélés par un masque
+    var pts = ILES.map(function (p) { return { x: p.x, y: p.y }; }).concat([YRON]);
+    var d = route(pts);
+    var defs = el('defs', {}, svg);
+    var mask = el('mask', { id: 'i-masque', maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 360, height: 680 }, defs);
+    var revele = el('path', { d: d, class: 'i-revele' }, mask);
+    el('path', { d: d, class: 'i-route', mask: 'url(#i-masque)' }, svg);
+    var L = revele.getTotalLength();
+    revele.style.strokeDasharray = L;
+    revele.style.strokeDashoffset = L;
 
-    function sable(clipBase, t, amp) {
-      ctx.save();
-      if (clipBase !== null) { eauChemin(t, clipBase, amp); ctx.clip(); }
-      var sg = ctx.createLinearGradient(0, 0, 0, H);
-      sg.addColorStop(0, '#F5E8CF'); sg.addColorStop(1, '#E4CB9F');
-      ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = grainPat; ctx.fillRect(0, 0, W, H);
-      ctx.restore();
-    }
+    // Position de chaque île le long de l'itinéraire
+    var seuils = ILES.map(function (p) {
+      var best = 0, dmin = 1e9;
+      for (var s = 0; s <= 400; s++) {
+        var q = revele.getPointAtLength((s / 400) * L);
+        var dd = (q.x - p.x) * (q.x - p.x) + (q.y - p.y) * (q.y - p.y);
+        if (dd < dmin) { dmin = dd; best = s / 400; }
+      }
+      return best;
+    });
 
-    // Reflets de lumière au fond de l'eau (caustiques)
-    function caustiques(t, base, amp) {
-      ctx.save();
-      eauChemin(t, base, amp); ctx.clip();
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.lineWidth = 2.2;
-      for (var n = 0; n < 16; n++) {
-        var y0 = (n / 16) * (H + 120) - 60;
-        ctx.beginPath();
-        for (var px = -10; px <= W + 20; px += 10) {
-          var y = y0 + 14 * Math.sin(px * 0.025 + t * 1.3 + n * 1.7) + 8 * Math.sin(px * 0.06 - t * 1.9 + n);
-          if (px === -10) ctx.moveTo(px, y); else ctx.lineTo(px, y);
-        }
-        ctx.strokeStyle = 'rgba(255,255,240,' + (0.07 + 0.04 * Math.sin(t * 2 + n)) + ')';
-        ctx.stroke();
-      }
-      for (var m = 0; m < 12; m++) {
-        var x0 = (m / 12) * (W + 120) - 60;
-        ctx.beginPath();
-        for (var py = -10; py <= H + 20; py += 12) {
-          var x = x0 + 16 * Math.sin(py * 0.022 + t * 1.1 + m * 2.1) + 7 * Math.sin(py * 0.05 - t * 1.6 + m);
-          if (py === -10) ctx.moveTo(x, py); else ctx.lineTo(x, py);
-        }
-        ctx.strokeStyle = 'rgba(255,255,240,' + (0.06 + 0.03 * Math.sin(t * 1.7 + m)) + ')';
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
+    // Yron : épingle en forme de cœur
+    var arrivee = el('g', { class: 'i-arrivee' }, svg);
+    el('path', { d: 'M' + YRON.x + ' ' + (YRON.y + 9) + ' c-14 -10 -16 -22 -8 -26 c5 -2 8 1 8 4 c0 -3 3 -6 8 -4 c8 4 6 16 -8 26 z', class: 'i-coeur' }, arrivee);
+    var ty = el('text', { x: YRON.x, y: YRON.y + 32, 'text-anchor': 'middle', class: 'i-yron' }, arrivee); ty.textContent = 'Yron';
+    var td = el('text', { x: YRON.x, y: YRON.y + 48, 'text-anchor': 'middle', class: 'i-date' }, arrivee); td.textContent = '26 · 06 · 2027';
+
+    // L'avion
+    var avion = el('g', { class: 'i-avion' }, svg);
+    el('path', { d: 'M12 0 L-6 -3 L-10 -12 L-13 -12 L-11 -3 L-16 -2 L-19 -6 L-21 -6 L-20 0 L-21 6 L-19 6 L-16 2 L-11 3 L-13 12 L-10 12 L-6 3 Z' }, avion);
+
+    // Légende du bas
+    var leg = document.createElement('div');
+    leg.className = 'i-legende';
+    leg.innerHTML = '<span class="i-eyebrow">Notre itinéraire</span><span class="i-titre">Il.e.s</span><span class="i-sous">Notre plus beau voyage</span>';
+    box.appendChild(leg);
+    var passer = document.createElement('div');
+    passer.className = 'i-passer'; passer.textContent = 'Touchez pour passer';
+    box.appendChild(passer);
+
+    var T_VOL0 = 0.7, T_VOL1 = 4.6, T_FIN = 5.7;
+    var t0 = null, decalage = 0, fini = false;
+    var easeInOut = function (k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; };
+    var clamp = function (k) { return Math.max(0, Math.min(1, k)); };
+
+    box.addEventListener('pointerdown', function () {
+      if (t0 === null) return;
+      var t = (performance.now() - t0) / 1000 + decalage;
+      if (t < T_FIN) decalage += T_FIN - t;
+    });
 
     function frame(now) {
-      if (t0 === null) t0 = now;
+      if (t0 === null) { t0 = now; box.classList.add('on'); }
       var t = (now - t0) / 1000 + decalage;
-      var base = niveau(t);
-      var amp = t < T_RETRAIT ? 1 : 1.25;
-      var retrait = t >= T_RETRAIT;
+      var p = easeInOut(clamp((t - T_VOL0) / (T_VOL1 - T_VOL0)));
+      revele.style.strokeDashoffset = L * (1 - p);
 
-      ctx.clearRect(0, 0, W, H);
+      var a = revele.getPointAtLength(Math.max(0, p * L - 0.5));
+      var b = revele.getPointAtLength(Math.min(L, p * L + 0.5));
+      var ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+      avion.setAttribute('transform', 'translate(' + b.x + ' ' + b.y + ') rotate(' + ang + ')');
+      avion.style.opacity = t < T_VOL0 - 0.3 ? 0 : (p >= 1 ? Math.max(0, 1 - (t - T_VOL1) * 3) : 1);
 
-      // Le sable : partout avant le retrait, seulement sous l'eau pendant le retrait
-      sable(retrait ? base : null, t, amp);
+      groupes.forEach(function (g, i) { if (p >= seuils[i] - 0.01) g.classList.add('vue'); });
+      if (p >= 0.999) { arrivee.classList.add('vue'); leg.classList.add('vue'); }
 
-      // Sable mouillé laissé derrière la mer, qui sèche (et s'efface) en un instant
-      if (retrait) {
-        var f = 1 - clamp((t - T_RETRAIT) / 0.9);
-        if (f > 0) {
-          ctx.save(); chemin(t, base, amp); ctx.lineTo(W + 20, -10); ctx.lineTo(-10, -10); ctx.closePath();
-          ctx.fillStyle = 'rgba(200,172,128,' + (0.55 * f) + ')'; ctx.fill(); ctx.restore();
-        }
-      } else {
-        // trace humide juste devant l'écume
-        chemin(t, base - 30, amp); ctx.lineTo(W + 20, H + 10); ctx.lineTo(-10, H + 10); ctx.closePath();
-        ctx.fillStyle = 'rgba(140,110,70,.16)'; ctx.fill();
+      if (t >= T_FIN && !fini) {
+        fini = true;
+        box.classList.add('part');
+        clearTimeout(secours);
+        go();
+        setTimeout(function () { box.remove(); }, 900);
+        return;
       }
-
-      // Ombre de l'écume sur le fond
-      chemin(t, base + 10, amp);
-      ctx.strokeStyle = 'rgba(90,70,40,.12)'; ctx.lineWidth = 10; ctx.stroke();
-
-      // L'eau claire : transparente au bord, turquoise puis bleu lagon au large
-      eauChemin(t, base, amp);
-      var prof = Math.max(H * 0.9, 260);
-      var wg = ctx.createLinearGradient(0, base - 10, 0, base + prof);
-      wg.addColorStop(0, 'rgba(190,240,232,.18)');
-      wg.addColorStop(0.10, 'rgba(120,222,214,.30)');
-      wg.addColorStop(0.35, 'rgba(48,190,192,.55)');
-      wg.addColorStop(0.75, 'rgba(18,150,165,.80)');
-      wg.addColorStop(1, 'rgba(10,120,140,.92)');
-      ctx.fillStyle = wg; ctx.fill();
-
-      caustiques(t, base, amp);
-
-      // L'écume
-      chemin(t, base, amp);
-      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      ctx.strokeStyle = 'rgba(255,255,255,.30)'; ctx.lineWidth = 15; ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 4; ctx.stroke();
-      for (var k = 1; k <= 3; k++) {
-        chemin(t * 1.2 + k, base + k * 13 + 5 * Math.sin(t * 3 + k), amp * 0.9);
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.5 / k) + ')'; ctx.lineWidth = 2.2 / k + 0.6;
-        ctx.setLineDash([18 / k + 6, 9 + k * 5]); ctx.stroke();
-      }
-      ctx.setLineDash([]);
-
-      // Le titre, porté par l'eau
-      var ta = clamp((t - 3.7) / 0.5) * (1 - clamp((t - 5.0) / 0.4));
-      if (ta > 0) {
-        ctx.save();
-        ctx.globalAlpha = ta;
-        ctx.fillStyle = '#FBF7F0';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(10,80,90,.45)'; ctx.shadowBlur = 18;
-        ctx.font = '600 ' + Math.round(Math.min(W * 0.14, 68)) + 'px Fraunces, Georgia, serif';
-        ctx.fillText('Il.e.s', W / 2, H / 2 - 14);
-        ctx.font = 'italic 400 ' + Math.round(Math.min(W * 0.05, 22)) + 'px Fraunces, Georgia, serif';
-        ctx.fillText('Notre plus beau voyage', W / 2, H / 2 + 30);
-        ctx.restore();
-      }
-
-      // Indication discrète pour passer
-      var pa = 0.75 * clamp(t / 0.6) * (1 - clamp((t - (T_RETRAIT - 0.4)) / 0.4));
-      if (pa > 0) {
-        ctx.save(); ctx.globalAlpha = pa;
-        ctx.fillStyle = t < 3.6 ? 'rgba(80,60,35,1)' : '#FBF7F0';
-        ctx.font = '500 12px Jost, system-ui, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('Touchez pour passer', W / 2, 34);
-        ctx.restore();
-      }
-
-      if (!devoile && t > T_RETRAIT + 0.3) { devoile = true; clearTimeout(secours); go(); }
-      if (t < T_FIN) requestAnimationFrame(frame);
-      else { window.removeEventListener('resize', size); c.remove(); }
+      requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
   });

@@ -23,15 +23,90 @@
 
   fetch('/api/infos').then((r) => r.json()).then((d) => afficherInfos(d.infos || [])).catch(() => {});
 
-  // ---------- Compte à rebours ----------
-  const cible = new Date('2027-06-26T15:00:00+02:00').getTime();
-  function tick() {
-    const d = Math.max(0, cible - Date.now());
-    $('#cj').textContent = Math.floor(d / 864e5);
-    $('#ch').textContent = Math.floor((d % 864e5) / 36e5);
-    $('#cm').textContent = Math.floor((d % 36e5) / 6e4);
+  // ---------- Tableau des départs (palettes qui défilent) ----------
+  const JEU = " ABCDEFGHIJKLMNOPQRSTUVWXYZÀÉ'0123456789";
+  const reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function cellule() {
+    const c = document.createElement('span');
+    c.className = 'cell';
+    c.innerHTML = '<span class="half top"><b></b></span><span class="half bot"><b></b></span>'
+      + '<span class="half ftop"><b></b></span><span class="half fbot"><b></b></span>';
+    c.car = ' ';
+    return c;
   }
-  tick(); setInterval(tick, 30000);
+  function poser(c, car) {
+    c.querySelectorAll('b').forEach((b) => { b.textContent = car; });
+    c.car = car;
+  }
+  function palette(c, car, ms) {
+    const [top, bot, ftop, fbot] = c.querySelectorAll('.half');
+    const ancien = c.car;
+    top.firstChild.textContent = car;
+    bot.firstChild.textContent = ancien;
+    ftop.firstChild.textContent = ancien;
+    fbot.firstChild.textContent = car;
+    c.car = car;
+    if (!ftop.animate) { poser(c, car); return Promise.resolve(); }
+    const a1 = ftop.animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }], { duration: ms / 2, easing: 'ease-in', fill: 'forwards' });
+    return a1.finished.then(() => {
+      const a2 = fbot.animate([{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }], { duration: ms / 2, easing: 'ease-out', fill: 'forwards' });
+      return a2.finished;
+    }).then(() => { bot.firstChild.textContent = car; ftop.firstChild.textContent = car; });
+  }
+  // Fait défiler une cellule de caractère en caractère jusqu'à la cible, comme un vrai tableau
+  async function defiler(c, cible, delai) {
+    await new Promise((r) => setTimeout(r, delai));
+    if (reduit) { poser(c, cible); return; }
+    let fin = JEU.indexOf(cible);
+    if (fin < 0) fin = 0;
+    let i = (fin - 6 - Math.floor(Math.random() * 9) + JEU.length) % JEU.length;
+    poser(c, JEU[i]);
+    let pas = 0;
+    while (i !== fin && pas < 60) {
+      i = (i + 1) % JEU.length; pas++;
+      await palette(c, JEU[i], 70);
+    }
+  }
+  function preparer(el) {
+    const n = Number(el.dataset.len);
+    el.innerHTML = '';
+    for (let k = 0; k < n; k++) {
+      const c = cellule();
+      poser(c, JEU[1 + Math.floor(Math.random() * 26)]);
+      el.appendChild(c);
+    }
+    return [...el.children];
+  }
+  function afficherTexte(el, texte, delai0, alignDroite) {
+    const cells = el.cells || (el.cells = preparer(el));
+    const n = cells.length;
+    const t = (alignDroite ? texte.padStart(n, ' ') : texte.padEnd(n, ' ')).slice(0, n).toUpperCase();
+    return Promise.all(cells.map((c, k) => defiler(c, t[k], delai0 + k * 70)));
+  }
+  function joursRestants() {
+    const p = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })
+      .formatToParts(new Date()).reduce((o, x) => (o[x.type] = x.value, o), {});
+    const auj = Date.UTC(+p.year, +p.month - 1, +p.day);
+    return Math.round((Date.UTC(2027, 5, 26) - auj) / 864e5);
+  }
+  const flapsDest = document.querySelector('[data-flaps="YRON"]');
+  [flapsDest, $('#flaps-jours'), $('#flaps-unite'), $('#flaps-statut')].forEach((el) => { el.cells = preparer(el); });
+  let tableauLance = false;
+  function lancerTableau() {
+    if (tableauLance) return; tableauLance = true;
+    const j = joursRestants();
+    const jours = j > 0 ? String(j) : '0';
+    const unite = j > 1 ? 'JOURS' : 'JOUR';
+    const statut = j > 0 ? "À L'HEURE" : j === 0 ? 'EMBARQUEMENT' : 'ARRIVÉ';
+    $('#board').setAttribute('aria-label', `Tableau des départs : vol IL 2627 pour Yron, départ dans ${jours} ${unite.toLowerCase()}, ${statut.toLowerCase()}`);
+    afficherTexte(flapsDest, 'YRON', 300);
+    afficherTexte($('#flaps-jours'), jours, 500, true);
+    afficherTexte($('#flaps-unite'), unite, 800);
+    afficherTexte($('#flaps-statut'), statut, 1100);
+  }
+  if (window.ilesGo && window.ilesGo()) lancerTableau();
+  else document.addEventListener('iles:go', lancerTableau);
+  setTimeout(lancerTableau, 9500);
 
   // ---------- Formulaire : affichages conditionnels ----------
   const val = (n) => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;

@@ -17,7 +17,7 @@
 <link rel="icon" href="/logo.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Jost:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
 <script src="/intro.js"></script>
 </head>
@@ -35,19 +35,14 @@
   <h1 class="noms anim-up d2">Cédric <em>&amp;</em> Sébastien</h1>
   <p class="sous anim-up d3">Notre plus beau voyage</p>
   <p class="date anim-up d3">Samedi 26 &amp; dimanche 27 juin 2027</p>
-  <div class="compte anim-up d4" id="compte" aria-live="off">
-    <div><b id="cj">–</b><span>jours</span></div>
-    <div><b id="ch">–</b><span>heures</span></div>
-    <div><b id="cm">–</b><span>min</span></div>
+  <div class="board anim-up d4" id="board" role="img" aria-label="Tableau des départs : vol IL.E.S pour Yron, départ le 26 juin 2027">
+    <div class="board-head"><span>Départs</span><span class="board-vol">Vol IL 2627</span></div>
+    <div class="board-row"><span class="board-lab">Destination</span><span class="flaps" data-flaps="YRON" data-len="4"></span></div>
+    <div class="board-row big"><span class="board-lab">Départ dans</span><span class="board-jours"><span class="flaps lg" id="flaps-jours" data-len="3"></span><span class="flaps" id="flaps-unite" data-len="5"></span></span></div>
+    <div class="board-row"><span class="board-lab">Statut</span><span class="board-statut"><i class="voyant" aria-hidden="true"></i><span class="flaps" id="flaps-statut" data-len="12"></span></span></div>
   </div>
   <a class="btn btn-primary anim-up d5" href="#reponse">Je réponds à l'invitation ✈</a>
-</div>
-  <div class="mer" aria-hidden="true">
-    <svg class="vague v1" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0 60 C240 20 480 100 720 60 C960 20 1200 100 1440 60 L1440 120 L0 120 Z"/></svg>
-    <svg class="vague v2" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0 70 C240 110 480 30 720 70 C960 110 1200 30 1440 70 L1440 120 L0 120 Z"/></svg>
-    <svg class="vague v3" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0 80 C180 60 360 100 540 80 C720 60 900 100 1080 80 C1260 60 1350 95 1440 80 L1440 120 L0 120 Z"/></svg>
-  </div>
-</header>
+</div></header>
 
 <section id="histoire"><div class="wrap histoire">
   <p class="eyebrow">Notre histoire</p>

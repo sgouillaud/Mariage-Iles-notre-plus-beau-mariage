@@ -23,8 +23,8 @@ mariage-iles/
 ├── public/
 │   ├── index.html        page des invités
 │   ├── site.css          styles et animations
-│   ├── site.js           formulaire, compte à rebours, apparitions au défilement
-│   ├── intro.js          animation d'ouverture « la marée se retire »
+│   ├── site.js           formulaire, tableau des départs, apparitions au défilement
+│   ├── intro.js          animation d'ouverture « notre itinéraire »
 │   ├── admin.html/.css/.js  tour de contrôle
 │   ├── logo.webp         logo Il.e.s
 │   └── apercu-whatsapp.jpg  image affichée dans WhatsApp quand on partage le lien
@@ -37,9 +37,9 @@ mariage-iles/
 ## 2. Ce que fait le site
 
 **Pour les invités**
-- Animation d'ouverture : la mer recouvre l'écran puis se retire, le logo se pose comme un tampon de passeport.
+- Ouverture « notre itinéraire » : sur une carte de voyage ancienne, un petit avion relie nos îles jusqu'à Yron (environ 6 s, un toucher la fait passer). Le logo se pose ensuite comme un tampon de passeport.
   Jouée une fois par visite, et désactivée automatiquement si le téléphone demande moins d'animations.
-- La mer ondule doucement en bas de l'accueil ; les sections apparaissent au fil du défilement.
+- Tableau des départs à palettes (style aéroport) qui défile jusqu'au nombre de jours restants ; les sections apparaissent au fil du défilement.
 - Formulaire : nom, prénom, email, téléphone, présence (oui / peut-être / non), moments (mairie, cérémonie & cocktail,
   dîner, brunch), hébergement (logé sur place ou par ses propres moyens), accompagnant(e), enfants (nom, prénom, âge),
   allergies et régime, petit mot.
