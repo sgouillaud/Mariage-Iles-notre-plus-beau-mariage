@@ -34,11 +34,11 @@ test('RSVP valide enregistré puis mis à jour (même email + prénom)', async (
   const { app, db } = setup();
   let r = await request(app).post('/api/rsvp').send(base);
   assert.equal(r.status, 200); assert.equal(r.body.updated, false);
-  r = await request(app).post('/api/rsvp').send({ ...base, email: 'lea@test.fr', presence: 'Peut-être' });
+  r = await request(app).post('/api/rsvp').send({ ...base, email: 'lea@test.fr', moments: 'Dîner' });
   assert.equal(r.body.updated, true);
   const rows = db.prepare('SELECT * FROM rsvps').all();
   assert.equal(rows.length, 1);
-  assert.equal(rows[0].presence, 'Peut-être');
+  assert.equal(rows[0].moments, 'Dîner');
   assert.equal(rows[0].nb_personnes, 3);
 });
 
@@ -48,6 +48,7 @@ test('RSVP invalides refusés', async () => {
     { ...base, email: 'pas-un-email' },
     { ...base, telephone: 'abc' },
     { ...base, presence: 'Bof' },
+    { ...base, presence: 'Peut-être' },
     { ...base, hebergement: '' },
     { ...base, enfants: [{ prenom: 'A', nom: 'B', age: 25 }] },
     { ...base, prenom: '' },

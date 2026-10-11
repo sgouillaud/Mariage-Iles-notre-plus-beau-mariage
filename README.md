@@ -40,7 +40,7 @@ mariage-iles/
 - Ouverture « notre itinéraire » : sur une carte de voyage ancienne, un petit avion relie nos îles jusqu'à Yron (vol de 5 s environ, un toucher la fait passer). Le logo se pose ensuite comme un tampon de passeport.
   Jouée une fois par visite, et désactivée automatiquement si le téléphone demande moins d'animations.
 - Tableau des départs à palettes (style aéroport) qui défile jusqu'au nombre de jours restants ; les sections apparaissent au fil du défilement.
-- Formulaire : nom, prénom, email, téléphone, présence (oui / peut-être / non), moments (mairie, cérémonie & cocktail,
+- Formulaire : nom, prénom, email, téléphone, présence (oui / non), moments (mairie, cérémonie & cocktail,
   dîner, brunch), hébergement (logé sur place ou par ses propres moyens), accompagnant(e), enfants (nom, prénom, âge),
   allergies et régime, petit mot.
 - **Un invité peut corriger sa réponse** : s'il renvoie le formulaire avec le même email et le même prénom,
@@ -48,9 +48,9 @@ mariage-iles/
   mais des prénoms différents apparaît en deux réponses.
 
 **Pour vous (`/admin`)**
-- Chiffres clés : personnes confirmées (+ peut-être), réponses, oui / peut-être / non, personnes à loger,
+- Chiffres clés : personnes confirmées, réponses, oui / non, personnes à loger,
   enfants, allergies, et nombre de personnes par moment (mairie, cérémonie, dîner, brunch).
-- Recherche et filtres (Oui, Peut-être, Non, Logés, Allergies), suppression d'une réponse.
+- Recherche et filtres (Oui, Non, Logés, Allergies), suppression d'une réponse.
 - **Infos pratiques** : ajoutez, modifiez, réordonnez les infos (parking, train, dress code, liste de mariage…).
   Cochez « À venir » pour une info pas encore prête. Le site est mis à jour immédiatement, sans redéploiement.
 - Exports CSV pour Excel : toutes les réponses, ou la liste des enfants (pour le traiteur).

@@ -4,7 +4,7 @@ class RsvpError extends Error {
   constructor(message) { super(message); this.code = 'BAD_INPUT'; }
 }
 
-const PRESENCES = ['Oui', 'Peut-être', 'Non'];
+const PRESENCES = ['Oui', 'Non'];
 const MOMENTS = ['Mairie', 'Cérémonie & cocktail', 'Dîner', 'Brunch'];
 const HEBERGEMENTS = ['Logé sur place', 'Par ses propres moyens'];
 const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;

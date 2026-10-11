@@ -135,11 +135,17 @@
   else document.addEventListener('iles:go', lancerTableau);
   setTimeout(lancerTableau, 9500);
 
+  // ---------- Date limite de réponse ----------
+  if (Date.now() >= Date.parse('2026-11-02T00:00:00+01:00')) {
+    $('#echeance').textContent = 'La date de réponse est passée, mais vous pouvez encore nous répondre ici.';
+    const h = document.querySelector('.echeance-hero'); if (h) h.remove();
+  }
+
   // ---------- Formulaire : affichages conditionnels ----------
   const val = (n) => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
   function maj() {
     const p = val('presence');
-    const vient = p === 'Oui' || p === 'Peut-être';
+    const vient = p === 'Oui';
     $('#bloc-venue').classList.toggle('cache', !vient);
     $('#bloc-details').classList.toggle('cache', !vient);
     $('#bloc-accomp').classList.toggle('cache', val('accomp') !== 'Oui');
@@ -252,7 +258,6 @@
       $('#merci-titre').textContent = `Merci ${d.prenom} !`;
       const base =
         d.presence === 'Oui' ? 'Votre place est réservée à bord. On a hâte de vivre ce voyage avec vous !'
-          : d.presence === 'Peut-être' ? 'C\'est noté ! Revenez confirmer dès que vous savez, avec le même email.'
             : 'Vous allez nous manquer. Merci d\'avoir pris le temps de répondre.';
       $('#merci-texte').textContent = res.updated ? `Votre réponse a bien été mise à jour. ${base}` : base;
       $('#reponse').scrollIntoView({ behavior: 'smooth' });

@@ -42,7 +42,7 @@ main{padding:22px 0 60px}
 
 /* Stats */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
-@media(min-width:700px){.stats{grid-template-columns:repeat(6,1fr)}}
+@media(min-width:700px){.stats{grid-template-columns:repeat(5,1fr)}}
 .stat{background:var(--papier);border:1px solid var(--ligne);border-radius:14px;padding:12px 14px}
 .stat b{display:block;font-family:var(--serif);font-size:30px;line-height:1.1;color:var(--canard)}
 .stat span{font-size:13px;color:var(--encre-2)}

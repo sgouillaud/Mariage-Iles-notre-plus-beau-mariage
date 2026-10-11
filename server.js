@@ -126,10 +126,8 @@ function createApp(options = {}) {
     const stats = {
       reponses: rows.length,
       oui: rows.filter((r) => r.presence === 'Oui').length,
-      peutEtre: rows.filter((r) => r.presence === 'Peut-être').length,
       non: rows.filter((r) => r.presence === 'Non').length,
       personnes: rows.filter((r) => r.presence === 'Oui').reduce((s, r) => s + r.nb_personnes, 0),
-      personnesPeutEtre: rows.filter((r) => r.presence === 'Peut-être').reduce((s, r) => s + r.nb_personnes, 0),
       enfants: viennent.reduce((s, r) => s + r.enfants.length, 0),
       loges: viennent.filter((r) => r.hebergement === 'Logé sur place').reduce((s, r) => s + r.nb_personnes, 0),
       allergies: viennent.filter((r) => r.allergies).length,

@@ -288,3 +288,8 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 .info-detail > p{font-size:15px;color:var(--encre-2);white-space:pre-line}
 .info.pliable[open] .info-detail{animation:deplie .3s ease}
 @media(max-width:420px){.info-detail{padding-left:18px}}
+
+/* ===== DATE LIMITE ===== */
+.echeance{display:inline-block;margin:-14px 0 24px;padding:8px 14px;border-radius:99px;background:rgba(192,100,62,.1);color:var(--terracotta-d);font-size:14px}
+.echeance strong{font-weight:600}
+.echeance-hero{margin-top:12px;font-size:13px;letter-spacing:.04em;color:var(--encre-2)}

@@ -2,7 +2,7 @@
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => [...document.querySelectorAll(s)];
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const BADGE = { Oui: 'b-oui', 'Peut-être': 'b-pe', Non: 'b-non' };
+  const BADGE = { Oui: 'b-oui', Non: 'b-non' };
 
   async function api(url, opts = {}) {
     const r = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
@@ -45,10 +45,9 @@
       donnees = d.rsvps;
       const s = d.stats;
       $('#stats').innerHTML = [
-        ['cle', s.personnes, 'personnes confirmées', s.personnesPeutEtre ? `+ ${s.personnesPeutEtre} peut-être` : ''],
+        ['cle', s.personnes, 'personnes confirmées', ''],
         ['', s.reponses, 'réponses reçues', ''],
         ['', s.oui, 'oui', ''],
-        ['', s.peutEtre, 'peut-être', ''],
         ['', s.non, 'non', ''],
         ['', s.loges, 'à loger', `${s.enfants} enfant${s.enfants > 1 ? 's' : ''} · ${s.allergies} allergie${s.allergies > 1 ? 's' : ''}`],
       ].map(([c, n, l, x]) => `<div class="stat ${c}"><b>${n}</b><span>${l}</span>${x ? `<small>${x}</small>` : ''}</div>`).join('');
@@ -63,7 +62,7 @@
     const rows = donnees.filter((r) => {
       if (filtre === 'loges' && !(r.presence !== 'Non' && r.hebergement === 'Logé sur place')) return false;
       if (filtre === 'allergies' && !r.allergies) return false;
-      if (['Oui', 'Peut-être', 'Non'].includes(filtre) && r.presence !== filtre) return false;
+      if (['Oui', 'Non'].includes(filtre) && r.presence !== filtre) return false;
       if (!q) return true;
       return [r.prenom, r.nom, r.email, r.telephone, r.accompagnant, r.enfants.map((k) => k.prenom + ' ' + k.nom).join(' ')]
         .join(' ').toLowerCase().includes(q);
