@@ -123,7 +123,7 @@
     passer.className = 'i-passer'; passer.textContent = 'Touchez pour passer';
     box.appendChild(passer);
 
-    var T_VOL0 = 0.7, T_VOL1 = 4.6, T_FIN = 5.7;
+    var T_VOL0 = 0.4, T_VOL1 = 5.4, T_FIN = 6.2;
     var t0 = null, decalage = 0, fini = false;
     var easeInOut = function (k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; };
     var clamp = function (k) { return Math.max(0, Math.min(1, k)); };

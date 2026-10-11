@@ -37,7 +37,7 @@ mariage-iles/
 ## 2. Ce que fait le site
 
 **Pour les invités**
-- Ouverture « notre itinéraire » : sur une carte de voyage ancienne, un petit avion relie nos îles jusqu'à Yron (environ 6 s, un toucher la fait passer). Le logo se pose ensuite comme un tampon de passeport.
+- Ouverture « notre itinéraire » : sur une carte de voyage ancienne, un petit avion relie nos îles jusqu'à Yron (vol de 5 s environ, un toucher la fait passer). Le logo se pose ensuite comme un tampon de passeport.
   Jouée une fois par visite, et désactivée automatiquement si le téléphone demande moins d'animations.
 - Tableau des départs à palettes (style aéroport) qui défile jusqu'au nombre de jours restants ; les sections apparaissent au fil du défilement.
 - Formulaire : nom, prénom, email, téléphone, présence (oui / peut-être / non), moments (mairie, cérémonie & cocktail,
