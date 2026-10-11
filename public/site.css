@@ -151,17 +151,8 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 .stamp img{position:relative;z-index:1}
 
 /* ===== ANIMATIONS ===== */
-/* 1. La marée qui se retire à l'ouverture */
-.maree{position:fixed;inset:0;z-index:100;pointer-events:none;display:flex;flex-direction:column}
-.maree .eau{flex:1;background:linear-gradient(180deg,#2A7472 0%,var(--canard) 55%,var(--canard-d) 100%)}
-.maree .bord{display:block;width:100%;height:90px;margin-top:-1px}
-.maree .bord path{fill:var(--canard-d)}
-.maree .ecume{display:block;width:100%;height:90px;margin-top:-90px;opacity:.55}
-.maree .ecume path{fill:none;stroke:var(--creme);stroke-width:3}
-.maree .titre{position:absolute;inset:0;display:grid;place-items:center;color:var(--creme);font-family:var(--serif);font-size:clamp(34px,9vw,54px);letter-spacing:.06em;animation:titreMaree 1.9s ease forwards}
-.maree.part{animation:retrait 1.9s cubic-bezier(.65,0,.25,1) .55s forwards}
-@keyframes retrait{0%{transform:translateY(0)}100%{transform:translateY(calc(100% + 110px))}}
-@keyframes titreMaree{0%,25%{opacity:0;transform:translateY(8px)}40%,55%{opacity:1;transform:none}80%,100%{opacity:0}}
+/* 1. La vague d'ouverture (dessinée par intro.js) */
+.maree{position:fixed;inset:0;width:100%;height:100%;z-index:100;pointer-events:none;display:block}
 
 /* 2. Le logo se pose comme un tampon, le texte monte doucement */
 .js .anim-stamp{opacity:0}
@@ -179,12 +170,13 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 /* 3. La mer en bas de l'accueil */
 .mer{position:relative;height:90px;margin-top:-10px}
 .vague{position:absolute;left:0;bottom:0;width:200%;height:100%}
-.vague path{fill:var(--canard)}
-.v1{opacity:.22;animation:houle 18s linear infinite}
-.v2{opacity:.35;animation:houle 13s linear infinite reverse;height:80%}
+.vague path{fill:#22A9AE}
+.v1{opacity:.28;animation:houle 18s linear infinite}
+.v1 path{fill:#5FD0CB}
+.v2{opacity:.45;animation:houle 13s linear infinite reverse;height:80%}
 .v3{opacity:1;animation:houle 22s linear infinite;height:55%}
 .v3 path{fill:var(--creme)}
-.mer{background:linear-gradient(180deg,transparent 0%,rgba(31,92,91,.08) 100%)}
+.mer{background:linear-gradient(180deg,transparent 0%,rgba(34,169,174,.10) 100%)}
 @keyframes houle{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* 4. Apparitions au défilement */
