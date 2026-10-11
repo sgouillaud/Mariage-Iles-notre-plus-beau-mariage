@@ -293,3 +293,9 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 .echeance{display:inline-block;margin:-14px 0 24px;padding:8px 14px;border-radius:99px;background:rgba(192,100,62,.1);color:var(--terracotta-d);font-size:14px}
 .echeance strong{font-weight:600}
 .echeance-hero{margin-top:12px;font-size:13px;letter-spacing:.04em;color:var(--encre-2)}
+
+/* ===== SIGNATURE ===== */
+.signature{display:inline-flex;align-items:center;gap:6px}
+.coeur{width:15px;height:14px;fill:var(--terracotta);animation:bat 2.4s ease-in-out infinite}
+@keyframes bat{0%,60%,100%{transform:scale(1)}10%{transform:scale(1.18)}20%{transform:scale(1)}30%{transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){.coeur{animation:none}}
