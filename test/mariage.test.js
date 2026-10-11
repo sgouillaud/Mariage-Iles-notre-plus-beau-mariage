@@ -128,3 +128,12 @@ test('Infos par défaut : 6 trajets en voiture, Paris seul en train', async () =
   assert.deepEqual(par('Venir en voiture'), ['Paris', 'Beauvais', 'Caen', 'Rennes', 'Vannes', 'la Guadeloupe']);
   assert.deepEqual(par('Venir en train'), ['Paris']);
 });
+
+test('Dress code : nuancier par défaut et couleurs vérifiées', async () => {
+  const { app } = setup();
+  const dc = (await request(app).get('/api/infos')).body.infos.find((i) => i.titre === 'Dress code');
+  assert.deepEqual(dc.couleurs.map((c) => c.nom), ['Blanc', 'Ivoire', 'Écru', 'Beige', 'Sable']);
+  const c = await login(app);
+  const bad = [{ titre: 'Dress code', couleurs: [{ nom: 'Rouge', hex: 'red' }] }];
+  assert.equal((await request(app).put('/api/admin/infos').set('Cookie', c).send({ infos: bad })).status, 400);
+});

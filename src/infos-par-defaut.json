@@ -77,8 +77,30 @@
   {
     "icone": "👗",
     "titre": "Dress code",
-    "texte": "On vous dit tout très bientôt.",
-    "bientot": true
+    "texte": "Escale tropicale chic.\nOn vous attend tout en douceur, dans ces tons :",
+    "bientot": false,
+    "couleurs": [
+      {
+        "nom": "Blanc",
+        "hex": "#FFFFFF"
+      },
+      {
+        "nom": "Ivoire",
+        "hex": "#FFFCEF"
+      },
+      {
+        "nom": "Écru",
+        "hex": "#F1E9D8"
+      },
+      {
+        "nom": "Beige",
+        "hex": "#E2D2B4"
+      },
+      {
+        "nom": "Sable",
+        "hex": "#D6BF98"
+      }
+    ]
   },
   {
     "icone": "🎁",

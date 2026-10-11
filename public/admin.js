@@ -127,6 +127,13 @@
           lienTexte: t.querySelector('.t-lientexte').value,
         })),
       };
+      const coul = el.querySelector('.i-couleurs').value.trim();
+      if (coul) {
+        i.couleurs = coul.split(',').map((x) => x.trim()).filter(Boolean).map((x) => {
+          const m = x.match(/^(.*?)\s*(#[0-9a-fA-F]{6})$/);
+          return m ? { nom: m[1].trim(), hex: m[2] } : { nom: x, hex: '' };
+        });
+      }
       const url = el.querySelector('.i-lien-url').value.trim();
       if (url) i.lien = { url, texte: el.querySelector('.i-lien-texte').value };
       return i;
@@ -157,6 +164,7 @@
           ${(i.trajets || []).map(dessinerTrajet).join('')}
           <button type="button" class="btn ghost petit" data-act="t-ajout">+ Ajouter un trajet</button>
         </div>
+        <div class="plein"><label class="f">Couleurs (nom #code, séparées par des virgules)</label><input class="i-couleurs" value="${esc((i.couleurs || []).map((c) => `${c.nom} ${c.hex}`).join(', '))}" placeholder="Blanc #FFFFFF, Sable #D6BF98"></div>
         <div class="plein duo">
           <div><label class="f">Lien en bas de l'info (https://…)</label><input class="i-lien-url" value="${esc(i.lien ? i.lien.url : '')}" maxlength="500"></div>
           <div><label class="f">Texte du lien</label><input class="i-lien-texte" value="${esc(i.lien ? i.lien.texte : '')}" maxlength="80"></div>

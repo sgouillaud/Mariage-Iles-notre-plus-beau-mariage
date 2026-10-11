@@ -25,6 +25,14 @@ function cleanInfos(list) {
         return { depuis, resume: txt(t.resume, 60), details: txt(t.details, 2000), lien, lienTexte: lien ? (txt(t.lienTexte, 80) || 'Voir le détail') : '' };
       });
     }
+    if (Array.isArray(i.couleurs) && i.couleurs.length) {
+      if (i.couleurs.length > 12) throw new RsvpError('Trop de couleurs dans une info.');
+      out.couleurs = i.couleurs.map((c) => {
+        const hex = String(c.hex ?? '').trim().toUpperCase();
+        if (!/^#[0-9A-F]{6}$/.test(hex)) throw new RsvpError(`Couleur invalide (format #RRVVBB) : ${hex || 'vide'}`);
+        return { nom: txt(c.nom, 30), hex };
+      });
+    }
     const lienUrl = url(i.lien && i.lien.url);
     if (lienUrl) out.lien = { texte: txt(i.lien.texte, 80) || 'En savoir plus', url: lienUrl };
     return out;

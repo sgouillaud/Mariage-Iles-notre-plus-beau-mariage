@@ -16,9 +16,11 @@
       return `<div class="info reveal${i.bientot ? ' vide' : ''}${trajets ? ' large' : ''}"><div class="ico" aria-hidden="true">${esc(i.icone || '✦')}</div>` +
         `<div class="info-corps"><h4>${esc(i.titre)}${i.bientot ? ' <small>· À VENIR</small>' : ''}</h4>` +
         `${i.texte ? `<p>${esc(i.texte)}</p>` : ''}` +
+        `${(i.couleurs || []).length ? `<ul class="nuancier">${i.couleurs.map((c) => `<li><span class="pastille" data-hex="${esc(c.hex)}"></span>${esc(c.nom)}</li>`).join('')}</ul>` : ''}` +
         `${trajets ? `<div class="trajets">${trajets}</div>` : ''}` +
         `${i.lien ? lienExt(i.lien.url, i.lien.texte) : ''}</div></div>`;
     }).join('');
+    $$('#infos .pastille').forEach((p) => { if (/^#[0-9A-Fa-f]{6}$/.test(p.dataset.hex)) p.style.background = p.dataset.hex; });
     $$('#infos .reveal').forEach((el) => (observer ? observer.observe(el) : el.classList.add('vu')));
   }
 
