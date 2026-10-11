@@ -8,16 +8,26 @@
     ? `<a class="info-lien" href="${esc(url)}" target="_blank" rel="noopener">${esc(texte)} <span aria-hidden="true">↗</span></a>` : '';
   function afficherInfos(infos) {
     $('#infos').innerHTML = infos.map((i) => {
-      const trajets = (i.trajets || []).map((t) => `
+      const liste = i.trajets || [];
+      const trajets = liste.map((t) => `
         <details class="trajet">
           <summary><span class="t-txt"><span class="t-depuis">Depuis ${esc(t.depuis)}</span><span class="t-resume">${esc(t.resume)}</span></span></summary>
           <div class="t-corps"><p>${esc(t.details)}</p>${lienExt(t.lien, t.lienTexte || 'Voir le détail')}</div>
         </details>`).join('');
-      return `<div class="info reveal${i.bientot ? ' vide' : ''}${trajets ? ' large' : ''}"><div class="ico" aria-hidden="true">${esc(i.icone || '✦')}</div>` +
-        `<div class="info-corps"><h4>${esc(i.titre)}${i.bientot ? ' <small>· À VENIR</small>' : ''}</h4>` +
-        `${i.texte ? `<p>${esc(i.texte)}</p>` : ''}` +
-        `${(i.couleurs || []).length ? `<ul class="nuancier">${i.couleurs.map((c) => `<li><span class="pastille" data-hex="${esc(c.hex)}"></span>${esc(c.nom)}</li>`).join('')}</ul>` : ''}` +
-        `${trajets ? `<div class="trajets">${trajets}</div>` : ''}` +
+      const nuancier = (i.couleurs || []).length
+        ? `<ul class="nuancier">${i.couleurs.map((c) => `<li><span class="pastille" data-hex="${esc(c.hex)}"></span>${esc(c.nom)}</li>`).join('')}</ul>` : '';
+      const ico = `<div class="ico" aria-hidden="true">${esc(i.icone || '✦')}</div>`;
+      const titre = `<h4>${esc(i.titre)}${i.bientot ? ' <small>· À VENIR</small>' : ''}</h4>`;
+      if (liste.length) {
+        // Info avec trajets : repliée, elle ne se déplie qu'au toucher
+        const sous = liste.length === 1 ? `Depuis ${liste[0].depuis}` : `${liste.length} villes de départ`;
+        return `<details class="info pliable reveal">` +
+          `<summary class="info-tete">${ico}<div class="info-corps">${titre}<span class="sous-titre">${esc(sous)}</span></div></summary>` +
+          `<div class="info-detail">${i.texte ? `<p>${esc(i.texte)}</p>` : ''}<div class="trajets">${trajets}</div>` +
+          `${i.lien ? lienExt(i.lien.url, i.lien.texte) : ''}</div></details>`;
+      }
+      return `<div class="info reveal${i.bientot ? ' vide' : ''}">${ico}<div class="info-corps">${titre}` +
+        `${i.texte ? `<p>${esc(i.texte)}</p>` : ''}${nuancier}` +
         `${i.lien ? lienExt(i.lien.url, i.lien.texte) : ''}</div></div>`;
     }).join('');
     $$('#infos .pastille').forEach((p) => { if (/^#[0-9A-Fa-f]{6}$/.test(p.dataset.hex)) p.style.background = p.dataset.hex; });

@@ -275,3 +275,16 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 .liaison{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:28px;padding:14px 0 14px 22px;border-left:2px dashed var(--terracotta);font-size:14px;font-weight:500;color:var(--encre)}
 .liaison-ico{display:grid;place-items:center;width:30px;height:30px;margin-left:-38px;border-radius:50%;background:var(--creme);border:1.5px solid var(--terracotta);font-size:14px}
 .liaison a{font-size:13px;font-weight:600;color:var(--terracotta-d)}
+
+/* ===== INFOS REPLIABLES (voiture, train) ===== */
+.info.pliable{display:block;padding:0}
+.info-tete{list-style:none;display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer}
+.info-tete::-webkit-details-marker{display:none}
+.info-tete::after{content:"";flex:0 0 10px;height:10px;margin-left:auto;border-right:2px solid var(--terracotta);border-bottom:2px solid var(--terracotta);transform:rotate(45deg) translateY(-3px);transition:transform .25s ease}
+.info.pliable[open] .info-tete::after{transform:rotate(-135deg) translateY(-3px)}
+.info-tete:focus-visible{outline:2px solid var(--canard);outline-offset:-2px;border-radius:14px}
+.sous-titre{display:block;font-size:14px;color:var(--encre-2)}
+.info-detail{padding:0 18px 16px 70px}
+.info-detail > p{font-size:15px;color:var(--encre-2);white-space:pre-line}
+.info.pliable[open] .info-detail{animation:deplie .3s ease}
+@media(max-width:420px){.info-detail{padding-left:18px}}
