@@ -24,7 +24,7 @@
   fetch('/api/infos').then((r) => r.json()).then((d) => afficherInfos(d.infos || [])).catch(() => {});
 
   // ---------- Tableau des départs (palettes qui défilent) ----------
-  const JEU = " ABCDEFGHIJKLMNOPQRSTUVWXYZÀÉ'0123456789";
+  const JEU = " ABCDEFGHIJKLMNOPQRSTUVWXYZÀÈÉ'-0123456789";
   const reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function cellule() {
     const c = document.createElement('span');
@@ -89,8 +89,7 @@
     const auj = Date.UTC(+p.year, +p.month - 1, +p.day);
     return Math.round((Date.UTC(2027, 5, 26) - auj) / 864e5);
   }
-  const flapsDest = document.querySelector('[data-flaps="YRON"]');
-  [flapsDest, $('#flaps-jours'), $('#flaps-unite'), $('#flaps-statut')].forEach((el) => { el.cells = preparer(el); });
+  [$('#flaps-dest1'), $('#flaps-dest2'), $('#flaps-jours'), $('#flaps-unite'), $('#flaps-statut')].forEach((el) => { el.cells = preparer(el); });
   let tableauLance = false;
   function lancerTableau() {
     if (tableauLance) return; tableauLance = true;
@@ -98,8 +97,9 @@
     const jours = j > 0 ? String(j) : '0';
     const unite = j > 1 ? 'JOURS' : 'JOUR';
     const statut = j > 0 ? "À L'HEURE" : j === 0 ? 'EMBARQUEMENT' : 'ARRIVÉ';
-    $('#board').setAttribute('aria-label', `Tableau des départs : vol IL 2627 pour Yron, départ dans ${jours} ${unite.toLowerCase()}, ${statut.toLowerCase()}`);
-    afficherTexte(flapsDest, 'YRON', 300);
+    $('#board').setAttribute('aria-label', `Tableau des départs : vol IL 2627 pour Cloyes-les-Trois-Rivières, départ dans ${jours} ${unite.toLowerCase()}, ${statut.toLowerCase()}`);
+    afficherTexte($('#flaps-dest1'), 'CLOYES LES', 300);
+    afficherTexte($('#flaps-dest2'), 'TROIS RIVIÈRES', 450);
     afficherTexte($('#flaps-jours'), jours, 500, true);
     afficherTexte($('#flaps-unite'), unite, 800);
     afficherTexte($('#flaps-statut'), statut, 1100);

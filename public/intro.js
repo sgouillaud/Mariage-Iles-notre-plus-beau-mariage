@@ -129,7 +129,7 @@
     // Yron : épingle en forme de cœur
     var arrivee = el('g', { class: 'i-arrivee' }, svg);
     el('path', { d: 'M' + YRON.x + ' ' + (YRON.y + 9) + ' c-14 -10 -16 -22 -8 -26 c5 -2 8 1 8 4 c0 -3 3 -6 8 -4 c8 4 6 16 -8 26 z', class: 'i-coeur' }, arrivee);
-    var ty = el('text', { x: YRON.x, y: YRON.y + 32, 'text-anchor': 'middle', class: 'i-yron' }, arrivee); ty.textContent = 'Yron';
+    var ty = el('text', { x: YRON.x, y: YRON.y + 32, 'text-anchor': 'middle', class: 'i-yron' }, arrivee); ty.textContent = 'Cloyes-les-Trois-Rivières';
     var td = el('text', { x: YRON.x, y: YRON.y + 48, 'text-anchor': 'middle', class: 'i-date' }, arrivee); td.textContent = '26 · 06 · 2027';
 
     // L'avion
