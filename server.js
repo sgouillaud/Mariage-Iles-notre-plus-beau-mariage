@@ -181,7 +181,7 @@ function createApp(options = {}) {
         return {
           icone: String(i.icone ?? '').trim().slice(0, 8) || '✦',
           titre,
-          texte: String(i.texte ?? '').trim().slice(0, 600),
+          texte: String(i.texte ?? '').trim().slice(0, 1500),
           bientot: !!i.bientot,
         };
       });

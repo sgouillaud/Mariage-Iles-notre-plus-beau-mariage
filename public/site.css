@@ -82,7 +82,7 @@ section{padding:56px 0;border-top:1px dashed var(--ligne)}
 .info{display:flex;gap:14px;background:var(--papier);border:1px solid var(--ligne);border-radius:14px;padding:16px 18px}
 .info .ico{flex:0 0 38px;height:38px;border-radius:50%;background:var(--sable);display:grid;place-items:center;font-size:19px}
 .info h4{font-family:var(--serif);font-size:17px;margin-bottom:2px}
-.info p{font-size:15px;color:var(--encre-2)}
+.info p{font-size:15px;color:var(--encre-2);white-space:pre-line}
 .info.vide{border-style:dashed;background:transparent}
 
 /* FORMULAIRE = CARTE D'EMBARQUEMENT */

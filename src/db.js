@@ -6,8 +6,26 @@ const Database = require('better-sqlite3');
 // Infos pratiques affichées sur le site, modifiables depuis /admin
 const DEFAULT_INFOS = [
   { icone: '🛏️', titre: 'Dormir sur place', texte: 'Des chambres sont disponibles au prieuré, check-in dès 14h le samedi.', bientot: false },
-  { icone: '🚗', titre: 'Venir en voiture', texte: 'Infos parking et itinéraire à venir.', bientot: true },
-  { icone: '🚆', titre: 'Venir en train', texte: 'Gares les plus proches et navettes à venir.', bientot: true },
+  {
+    icone: '🚗', titre: 'Venir en voiture', bientot: false,
+    texte: 'Depuis Paris (environ 140 km, 2 h) : A6 puis A10, ensuite A11 direction Chartres. Sortie Chartres, puis N10 direction Tours par Bonneval et Châteaudun, jusqu\'à Cloyes.\n\n'
+      + 'Depuis Rennes (environ 260 km, 3 h) : N157 vers Laval, puis A81 et A11 direction Paris. Sortie vers Brou et Châteaudun, D955 jusqu\'à Châteaudun, puis N10 jusqu\'à Cloyes.\n\n'
+      + 'Infos parking à venir.',
+  },
+  {
+    icone: '🚆', titre: 'Train : gare de Châteaudun', bientot: false,
+    texte: 'La gare la mieux desservie : TER Rémi direct depuis Paris-Austerlitz, environ 1 h 30. Châteaudun est à une douzaine de kilomètres du prieuré (prévoir voiture ou taxi).\n\n'
+      + 'Aller, trains directs depuis Paris-Austerlitz : 6h25, 8h12, 9h39, 13h56, 16h25, 17h59, 19h25.\n'
+      + 'Retour, trains directs depuis Châteaudun : 6h05, 7h08, 10h54, 12h09, 16h08, 17h09, 18h42.\n\n'
+      + 'Horaires actuels en semaine, à titre indicatif. Ceux de juin 2027 seront publiés à la mi-décembre : nous mettrons cette rubrique à jour.',
+  },
+  {
+    icone: '🚉', titre: 'Train : gare de Cloyes', bientot: false,
+    texte: 'La gare de Cloyes est sur place, mais moins desservie : 2 trains directs par jour avec Paris-Austerlitz (environ 1 h 40). Les autres trajets passent par une correspondance.\n\n'
+      + 'Aller depuis Paris-Austerlitz : 13h56 (arrivée 15h33), 19h25 (arrivée 21h17).\n'
+      + 'Retour depuis Cloyes : 5h53 (arrivée 7h45), 16h56 (arrivée 18h36).\n\n'
+      + 'Horaires actuels en semaine, à titre indicatif, mis à jour quand ceux de juin 2027 seront connus.',
+  },
   { icone: '👗', titre: 'Dress code', texte: 'On vous dit tout très bientôt.', bientot: true },
   { icone: '🎁', titre: 'Liste de mariage', texte: 'Bientôt en ligne.', bientot: true },
 ];

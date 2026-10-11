@@ -125,7 +125,7 @@
       <div class="info-ed" data-n="${n}">
         <div><label class="f">Icône</label><input class="i-ico" value="${esc(i.icone)}" maxlength="8"></div>
         <div><label class="f">Titre</label><input class="i-titre" value="${esc(i.titre)}" maxlength="80"></div>
-        <div class="plein"><label class="f">Texte</label><textarea class="i-texte" maxlength="600">${esc(i.texte)}</textarea></div>
+        <div class="plein"><label class="f">Texte</label><textarea class="i-texte" maxlength="1500">${esc(i.texte)}</textarea></div>
         <div class="bas">
           <label><input type="checkbox" class="i-bientot" ${i.bientot ? 'checked' : ''}> À venir (en pointillés)</label>
           <div class="ordre">
