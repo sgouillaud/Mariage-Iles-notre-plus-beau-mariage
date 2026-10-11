@@ -1,0 +1,124 @@
+[
+  {
+    "icone": "🛏️",
+    "titre": "Dormir sur place",
+    "texte": "Des chambres sont disponibles au prieuré, check-in dès 14h le samedi.",
+    "bientot": false
+  },
+  {
+    "icone": "🚗",
+    "titre": "Venir en voiture",
+    "texte": "Choisissez votre ville de départ pour voir l'itinéraire. Infos parking à venir.",
+    "bientot": false,
+    "trajets": [
+      {
+        "depuis": "Paris",
+        "resume": "140 km · 2 h",
+        "details": "A6 puis A10 direction Orléans, puis A11 direction Chartres / Le Mans. Sortie Chartres, puis N10 direction Tours par Bonneval et Châteaudun, jusqu'à Cloyes.",
+        "lien": "https://www.google.com/maps/dir/?api=1&origin=Paris&destination=Prieur%C3%A9%20Notre-Dame%20d%27Yron%2C%20Cloyes-les-Trois-Rivi%C3%A8res",
+        "lienTexte": "Voir sur Google Maps"
+      },
+      {
+        "depuis": "Beauvais",
+        "resume": "215 km · 3 h",
+        "details": "A16 direction Paris, puis la Francilienne (N184) vers Cergy. A12 vers Saint-Quentin-en-Yvelines et Rambouillet, N10 vers Chartres, puis A11 direction Le Mans. Ensuite N10 par Châteaudun jusqu'à Cloyes.",
+        "lien": "https://www.google.com/maps/dir/?api=1&origin=Beauvais&destination=Prieur%C3%A9%20Notre-Dame%20d%27Yron%2C%20Cloyes-les-Trois-Rivi%C3%A8res",
+        "lienTexte": "Voir sur Google Maps"
+      },
+      {
+        "depuis": "Caen",
+        "resume": "265 km · 3 h",
+        "details": "N158 direction Falaise et Alençon, puis A88 et A28 vers Le Mans. A11 direction Paris, sortie vers Brou et Châteaudun. D955 jusqu'à Châteaudun, puis N10 jusqu'à Cloyes.",
+        "lien": "https://www.google.com/maps/dir/?api=1&origin=Caen&destination=Prieur%C3%A9%20Notre-Dame%20d%27Yron%2C%20Cloyes-les-Trois-Rivi%C3%A8res",
+        "lienTexte": "Voir sur Google Maps"
+      },
+      {
+        "depuis": "Rennes",
+        "resume": "260 km · 3 h",
+        "details": "N157 vers Vitré et Laval, puis A81 et A11 direction Paris. Sortie vers Brou et Châteaudun, D955 jusqu'à Châteaudun, puis N10 jusqu'à Cloyes.",
+        "lien": "https://www.google.com/maps/dir/?api=1&origin=Rennes&destination=Prieur%C3%A9%20Notre-Dame%20d%27Yron%2C%20Cloyes-les-Trois-Rivi%C3%A8res",
+        "lienTexte": "Voir sur Google Maps"
+      },
+      {
+        "depuis": "Vannes",
+        "resume": "370 km · 4 h 20",
+        "details": "N166 vers Ploërmel, N24 jusqu'à Rennes, puis la rocade et la N157 vers Laval. A81 et A11 direction Paris, sortie vers Brou et Châteaudun. D955 jusqu'à Châteaudun, puis N10 jusqu'à Cloyes.",
+        "lien": "https://www.google.com/maps/dir/?api=1&origin=Vannes&destination=Prieur%C3%A9%20Notre-Dame%20d%27Yron%2C%20Cloyes-les-Trois-Rivi%C3%A8res",
+        "lienTexte": "Voir sur Google Maps"
+      },
+      {
+        "depuis": "la Guadeloupe",
+        "resume": "vol + 1 h 50 de route",
+        "details": "Vol direct Pointe-à-Pitre → Paris-Orly (environ 8 h).\n\nDepuis Orly en voiture de location : 130 km, environ 1 h 50. A10 puis A11 direction Chartres / Le Mans, sortie Châteaudun, puis N10 jusqu'à Cloyes.",
+        "lien": "https://www.google.com/maps/dir/?api=1&origin=A%C3%A9roport%20de%20Paris-Orly&destination=Prieur%C3%A9%20Notre-Dame%20d%27Yron%2C%20Cloyes-les-Trois-Rivi%C3%A8res",
+        "lienTexte": "Itinéraire depuis Orly sur Google Maps"
+      }
+    ]
+  },
+  {
+    "icone": "🚆",
+    "titre": "Venir en train",
+    "texte": "Deux gares : Châteaudun, la mieux desservie, à une douzaine de kilomètres du prieuré, et Cloyes, sur place mais avec moins de trains. Horaires actuels de semaine, à titre indicatif : ceux de juin 2027 seront ajoutés dès leur publication.",
+    "bientot": false,
+    "trajets": [
+      {
+        "depuis": "Paris",
+        "resume": "direct · 1 h 30 à 1 h 40",
+        "details": "TER Rémi direct depuis Paris-Austerlitz.\n\nVers Châteaudun (la gare la mieux desservie, à une douzaine de kilomètres du prieuré) :\naller 6h25, 8h12, 9h39, 13h56, 16h25, 17h59, 19h25\nretour 6h05, 7h08, 10h54, 12h09, 16h08, 17h09, 18h42\n\nVers Cloyes (sur place, moins de trains) :\naller 13h56 (arrivée 15h33), 19h25 (arrivée 21h17)\nretour 5h53 (arrivée 7h45), 16h56 (arrivée 18h36)\n\nPour être à la mairie à 15h, prenez un train du matin jusqu'à Châteaudun.",
+        "lien": "https://www.sncf-connect.com/train/horaires/paris/chateaudun",
+        "lienTexte": "Horaires Paris → Châteaudun sur SNCF Connect"
+      },
+      {
+        "depuis": "Beauvais",
+        "resume": "via Paris · 3 h 30 environ",
+        "details": "TER de Beauvais à Paris-Nord : 1 h 10 à 1 h 20, une vingtaine de trains par jour.\nMétro ligne 5 direct de Gare du Nord à Gare d'Austerlitz : environ 25 min.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).",
+        "lien": "https://www.sncf-connect.com/train/horaires/beauvais/paris",
+        "lienTexte": "Horaires Beauvais → Paris sur SNCF Connect"
+      },
+      {
+        "depuis": "Caen",
+        "resume": "via Paris · 4 h 30 environ",
+        "details": "Train de Caen à Paris-Saint-Lazare : environ 2 h, une vingtaine de trains par jour.\nMétro ligne 14 jusqu'à Gare de Lyon, puis une douzaine de minutes à pied en traversant la Seine jusqu'à la gare d'Austerlitz.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).",
+        "lien": "https://www.sncf-connect.com/train/horaires/caen/paris",
+        "lienTexte": "Horaires Caen → Paris sur SNCF Connect"
+      },
+      {
+        "depuis": "Rennes",
+        "resume": "via Paris · 4 h environ",
+        "details": "TGV de Rennes à Paris-Montparnasse : environ 1 h 30.\nDe Montparnasse à Austerlitz : bus 91 direct, ou métro ligne 6 puis ligne 5 (changement à Place d'Italie), environ 25 min.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).\n\nAutre possibilité : depuis Montparnasse, TER vers Chartres avec correspondance pour Châteaudun.",
+        "lien": "https://www.sncf-connect.com/train/horaires/rennes/paris",
+        "lienTexte": "Horaires Rennes → Paris sur SNCF Connect"
+      },
+      {
+        "depuis": "Vannes",
+        "resume": "via Paris · 5 h environ",
+        "details": "TGV direct de Vannes à Paris-Montparnasse : 2 h 40 à 2 h 50, une dizaine de trains par jour.\nDe Montparnasse à Austerlitz : bus 91 direct, ou métro ligne 6 puis ligne 5 (changement à Place d'Italie), environ 25 min.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).",
+        "lien": "https://www.sncf-connect.com/train/horaires/vannes/paris",
+        "lienTexte": "Horaires Vannes → Paris sur SNCF Connect"
+      },
+      {
+        "depuis": "la Guadeloupe",
+        "resume": "vol + train via Paris",
+        "details": "Vol direct Pointe-à-Pitre → Paris (environ 8 h).\n\nArrivée à Orly : métro ligne 14 jusqu'à Gare de Lyon, puis une douzaine de minutes à pied jusqu'à la gare d'Austerlitz.\nArrivée à Charles-de-Gaulle : RER B jusqu'à Gare du Nord, puis métro ligne 5 jusqu'à Gare d'Austerlitz.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).",
+        "lien": "https://www.sncf-connect.com",
+        "lienTexte": "Préparer le trajet sur SNCF Connect"
+      }
+    ],
+    "lien": {
+      "texte": "Horaires et billets sur SNCF Connect",
+      "url": "https://www.sncf-connect.com"
+    }
+  },
+  {
+    "icone": "👗",
+    "titre": "Dress code",
+    "texte": "On vous dit tout très bientôt.",
+    "bientot": true
+  },
+  {
+    "icone": "🎁",
+    "titre": "Liste de mariage",
+    "texte": "Bientôt en ligne.",
+    "bientot": true
+  }
+]

@@ -113,12 +113,38 @@
     try { infos = (await api('/api/admin/infos')).infos; dessinerInfos(); } catch (e) { /* login */ }
   }
   function lireFormulaire() {
-    infos = $$('.info-ed').map((el) => ({
-      icone: el.querySelector('.i-ico').value,
-      titre: el.querySelector('.i-titre').value,
-      texte: el.querySelector('.i-texte').value,
-      bientot: el.querySelector('.i-bientot').checked,
-    }));
+    infos = $$('.info-ed').map((el) => {
+      const i = {
+        icone: el.querySelector('.i-ico').value,
+        titre: el.querySelector('.i-titre').value,
+        texte: el.querySelector('.i-texte').value,
+        bientot: el.querySelector('.i-bientot').checked,
+        trajets: [...el.querySelectorAll('.trajet-ed')].map((t) => ({
+          depuis: t.querySelector('.t-depuis').value,
+          resume: t.querySelector('.t-resume').value,
+          details: t.querySelector('.t-details').value,
+          lien: t.querySelector('.t-lien').value,
+          lienTexte: t.querySelector('.t-lientexte').value,
+        })),
+      };
+      const url = el.querySelector('.i-lien-url').value.trim();
+      if (url) i.lien = { url, texte: el.querySelector('.i-lien-texte').value };
+      return i;
+    });
+  }
+  function dessinerTrajet(t, n) {
+    return `<div class="trajet-ed" data-t="${n}">
+      <div class="duo">
+        <div><label class="f">Depuis</label><input class="t-depuis" value="${esc(t.depuis)}" maxlength="60" placeholder="Paris"></div>
+        <div><label class="f">En bref</label><input class="t-resume" value="${esc(t.resume)}" maxlength="60" placeholder="140 km · 2 h"></div>
+      </div>
+      <label class="f">Détail</label><textarea class="t-details" maxlength="2000">${esc(t.details)}</textarea>
+      <div class="duo">
+        <div><label class="f">Lien (https://…)</label><input class="t-lien" value="${esc(t.lien)}" maxlength="500"></div>
+        <div><label class="f">Texte du lien</label><input class="t-lientexte" value="${esc(t.lienTexte)}" maxlength="80"></div>
+      </div>
+      <div class="ordre"><button type="button" data-act="t-haut">↑</button><button type="button" data-act="t-bas">↓</button><button type="button" data-act="t-suppr" class="suppr">Retirer ce trajet</button></div>
+    </div>`;
   }
   function dessinerInfos() {
     $('#infos-liste').innerHTML = infos.map((i, n) => `
@@ -126,30 +152,52 @@
         <div><label class="f">Icône</label><input class="i-ico" value="${esc(i.icone)}" maxlength="8"></div>
         <div><label class="f">Titre</label><input class="i-titre" value="${esc(i.titre)}" maxlength="80"></div>
         <div class="plein"><label class="f">Texte</label><textarea class="i-texte" maxlength="1500">${esc(i.texte)}</textarea></div>
+        <div class="plein trajets-ed">
+          <label class="f">Trajets dépliables${(i.trajets || []).length ? ` (${i.trajets.length})` : ''}</label>
+          ${(i.trajets || []).map(dessinerTrajet).join('')}
+          <button type="button" class="btn ghost petit" data-act="t-ajout">+ Ajouter un trajet</button>
+        </div>
+        <div class="plein duo">
+          <div><label class="f">Lien en bas de l'info (https://…)</label><input class="i-lien-url" value="${esc(i.lien ? i.lien.url : '')}" maxlength="500"></div>
+          <div><label class="f">Texte du lien</label><input class="i-lien-texte" value="${esc(i.lien ? i.lien.texte : '')}" maxlength="80"></div>
+        </div>
         <div class="bas">
           <label><input type="checkbox" class="i-bientot" ${i.bientot ? 'checked' : ''}> À venir (en pointillés)</label>
           <div class="ordre">
             <button type="button" data-act="haut" aria-label="Monter">↑</button>
             <button type="button" data-act="bas" aria-label="Descendre">↓</button>
-            <button type="button" data-act="suppr" class="suppr">Retirer</button>
+            <button type="button" data-act="suppr" class="suppr">Retirer l'info</button>
           </div>
         </div>
       </div>`).join('');
   }
+  function nonEnregistre() { $('#info-msg').textContent = 'Modifications non enregistrées.'; $('#info-msg').className = 'ok ko'; }
   $('#infos-liste').addEventListener('click', (e) => {
     const b = e.target.closest('button[data-act]');
     if (!b) return;
     lireFormulaire();
     const n = Number(b.closest('.info-ed').dataset.n);
-    if (b.dataset.act === 'suppr') infos.splice(n, 1);
-    if (b.dataset.act === 'haut' && n > 0) [infos[n - 1], infos[n]] = [infos[n], infos[n - 1]];
-    if (b.dataset.act === 'bas' && n < infos.length - 1) [infos[n + 1], infos[n]] = [infos[n], infos[n + 1]];
+    const act = b.dataset.act;
+    const swap = (arr, x, y) => { if (y >= 0 && y < arr.length) [arr[x], arr[y]] = [arr[y], arr[x]]; };
+    if (act === 'suppr') infos.splice(n, 1);
+    if (act === 'haut') swap(infos, n, n - 1);
+    if (act === 'bas') swap(infos, n, n + 1);
+    if (act.startsWith('t-')) {
+      const tr = infos[n].trajets;
+      const k = b.closest('.trajet-ed') ? Number(b.closest('.trajet-ed').dataset.t) : -1;
+      if (act === 't-ajout') tr.push({ depuis: '', resume: '', details: '', lien: '', lienTexte: '' });
+      if (act === 't-suppr') tr.splice(k, 1);
+      if (act === 't-haut') swap(tr, k, k - 1);
+      if (act === 't-bas') swap(tr, k, k + 1);
+    }
     dessinerInfos();
-    $('#info-msg').textContent = 'Modifications non enregistrées.'; $('#info-msg').className = 'ok ko';
+    nonEnregistre();
+    if (act === 't-ajout') { const l = $$(`.info-ed[data-n="${n}"] .t-depuis`); l[l.length - 1].focus(); }
   });
+  $('#infos-liste').addEventListener('input', nonEnregistre);
   $('#info-ajout').onclick = () => {
     lireFormulaire();
-    infos.push({ icone: '✦', titre: '', texte: '', bientot: false });
+    infos.push({ icone: '✦', titre: '', texte: '', bientot: false, trajets: [] });
     dessinerInfos();
     $$('.i-titre').pop().focus();
   };
@@ -158,7 +206,7 @@
     try {
       infos = (await api('/api/admin/infos', { method: 'PUT', body: JSON.stringify({ infos }) })).infos;
       dessinerInfos();
-      $('#info-msg').textContent = 'Enregistré ✓ — le site est à jour.'; $('#info-msg').className = 'ok';
+      $('#info-msg').textContent = 'Enregistré ✓ Le site est à jour.'; $('#info-msg').className = 'ok';
     } catch (err) { $('#info-msg').textContent = err.message; $('#info-msg').className = 'ok ko'; }
   };
 

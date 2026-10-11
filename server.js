@@ -6,6 +6,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const { openDb, getInfos, setInfos } = require('./src/db');
 const { cleanRsvp, RsvpError } = require('./src/rsvp');
+const { cleanInfos } = require('./src/infos');
 const { COOKIE, MAX_AGE_MS, checkPassword, createToken, verifyToken, rateLimiter } = require('./src/auth');
 
 function csvCell(v) {
@@ -173,18 +174,7 @@ function createApp(options = {}) {
   admin.get('/infos', (req, res) => res.json({ infos: getInfos(db) }));
   admin.put('/infos', (req, res, next) => {
     try {
-      const list = req.body && req.body.infos;
-      if (!Array.isArray(list) || list.length > 30) throw new RsvpError('Liste d\'infos invalide.');
-      const clean = list.map((i) => {
-        const titre = String(i.titre ?? '').trim().slice(0, 80);
-        if (!titre) throw new RsvpError('Chaque info doit avoir un titre.');
-        return {
-          icone: String(i.icone ?? '').trim().slice(0, 8) || '✦',
-          titre,
-          texte: String(i.texte ?? '').trim().slice(0, 1500),
-          bientot: !!i.bientot,
-        };
-      });
+      const clean = cleanInfos(req.body && req.body.infos);
       setInfos(db, clean);
       res.json({ ok: true, infos: clean });
     } catch (e) { next(e); }

@@ -103,3 +103,28 @@ test('Admin : infos pratiques modifiables et visibles publiquement', async () =>
   assert.deepEqual(pub.body.infos, infos);
   assert.equal((await request(app).put('/api/admin/infos').set('Cookie', c).send({ infos: [{ titre: '' }] })).status, 400);
 });
+
+test('Admin : trajets dépliables et liens vérifiés', async () => {
+  const { app } = setup();
+  const c = await login(app);
+  const infos = [{
+    icone: '🚗', titre: 'Venir en voiture', texte: '', bientot: false,
+    trajets: [{ depuis: 'Paris', resume: '140 km · 2 h', details: 'A10 puis A11.', lien: 'https://www.google.com/maps', lienTexte: 'Carte' }],
+    lien: { texte: 'SNCF', url: 'https://www.sncf-connect.com' },
+  }];
+  const r = await request(app).put('/api/admin/infos').set('Cookie', c).send({ infos });
+  assert.equal(r.status, 200);
+  assert.equal((await request(app).get('/api/infos')).body.infos[0].trajets[0].depuis, 'Paris');
+  const bad = JSON.parse(JSON.stringify(infos)); bad[0].trajets[0].lien = 'javascript:alert(1)';
+  assert.equal((await request(app).put('/api/admin/infos').set('Cookie', c).send({ infos: bad })).status, 400);
+});
+
+test('Infos par défaut : voiture et train ont leurs trajets', async () => {
+  const { app } = setup();
+  const r = await request(app).get('/api/infos');
+  const titres = r.body.infos.map((i) => i.titre);
+  assert.ok(titres.includes('Venir en voiture') && titres.includes('Venir en train'));
+  for (const i of r.body.infos.filter((x) => x.trajets)) {
+    assert.deepEqual(i.trajets.map((t) => t.depuis), ['Paris', 'Beauvais', 'Caen', 'Rennes', 'Vannes', 'la Guadeloupe']);
+  }
+});

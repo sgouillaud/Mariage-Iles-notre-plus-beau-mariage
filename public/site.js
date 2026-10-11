@@ -4,12 +4,22 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   // ---------- Infos pratiques (modifiables depuis /admin) ----------
+  const lienExt = (url, texte) => /^https:\/\//.test(url || '')
+    ? `<a class="info-lien" href="${esc(url)}" target="_blank" rel="noopener">${esc(texte)} <span aria-hidden="true">↗</span></a>` : '';
   function afficherInfos(infos) {
-    $('#infos').innerHTML = infos.map((i) =>
-      `<div class="info reveal${i.bientot ? ' vide' : ''}"><div class="ico" aria-hidden="true">${esc(i.icone || '✦')}</div>` +
-      `<div><h4>${esc(i.titre)}${i.bientot ? ' <small>· À VENIR</small>' : ''}</h4><p>${esc(i.texte)}</p></div></div>`
-    ).join('');
-    $$('#infos .reveal').forEach((el) => observer && observer.observe(el));
+    $('#infos').innerHTML = infos.map((i) => {
+      const trajets = (i.trajets || []).map((t) => `
+        <details class="trajet">
+          <summary><span class="t-txt"><span class="t-depuis">Depuis ${esc(t.depuis)}</span><span class="t-resume">${esc(t.resume)}</span></span></summary>
+          <div class="t-corps"><p>${esc(t.details)}</p>${lienExt(t.lien, t.lienTexte || 'Voir le détail')}</div>
+        </details>`).join('');
+      return `<div class="info reveal${i.bientot ? ' vide' : ''}${trajets ? ' large' : ''}"><div class="ico" aria-hidden="true">${esc(i.icone || '✦')}</div>` +
+        `<div class="info-corps"><h4>${esc(i.titre)}${i.bientot ? ' <small>· À VENIR</small>' : ''}</h4>` +
+        `${i.texte ? `<p>${esc(i.texte)}</p>` : ''}` +
+        `${trajets ? `<div class="trajets">${trajets}</div>` : ''}` +
+        `${i.lien ? lienExt(i.lien.url, i.lien.texte) : ''}</div></div>`;
+    }).join('');
+    $$('#infos .reveal').forEach((el) => (observer ? observer.observe(el) : el.classList.add('vu')));
   }
 
   // ---------- Apparitions au défilement ----------

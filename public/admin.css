@@ -98,3 +98,10 @@ main{padding:22px 0 60px}
 .bloc{margin-bottom:14px}
 .bloc h2{font-size:20px;margin-bottom:6px}
 .bloc p{color:var(--encre-2)}
+
+.trajets-ed{border-top:1px dashed var(--ligne);padding-top:10px;display:grid;gap:10px}
+.trajet-ed{background:#fff;border:1px solid var(--ligne);border-radius:10px;padding:10px;display:grid;gap:8px}
+.trajet-ed textarea{min-height:110px}
+.duo{display:grid;gap:8px;grid-template-columns:1fr}
+@media(min-width:560px){.duo{grid-template-columns:1fr 1fr}}
+.btn.petit{padding:8px 14px;font-size:14px;justify-self:start}
