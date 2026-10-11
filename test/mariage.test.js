@@ -119,12 +119,12 @@ test('Admin : trajets dépliables et liens vérifiés', async () => {
   assert.equal((await request(app).put('/api/admin/infos').set('Cookie', c).send({ infos: bad })).status, 400);
 });
 
-test('Infos par défaut : voiture et train ont leurs trajets', async () => {
+test('Infos par défaut : 6 trajets en voiture, Paris seul en train', async () => {
   const { app } = setup();
   const r = await request(app).get('/api/infos');
   const titres = r.body.infos.map((i) => i.titre);
   assert.ok(titres.includes('Venir en voiture') && titres.includes('Venir en train'));
-  for (const i of r.body.infos.filter((x) => x.trajets)) {
-    assert.deepEqual(i.trajets.map((t) => t.depuis), ['Paris', 'Beauvais', 'Caen', 'Rennes', 'Vannes', 'la Guadeloupe']);
-  }
+  const par = (titre) => r.body.infos.find((i) => i.titre === titre).trajets.map((t) => t.depuis);
+  assert.deepEqual(par('Venir en voiture'), ['Paris', 'Beauvais', 'Caen', 'Rennes', 'Vannes', 'la Guadeloupe']);
+  assert.deepEqual(par('Venir en train'), ['Paris']);
 });

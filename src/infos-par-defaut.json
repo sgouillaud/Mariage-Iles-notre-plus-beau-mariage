@@ -67,41 +67,6 @@
         "details": "TER Rémi direct depuis Paris-Austerlitz.\n\nVers Châteaudun (la gare la mieux desservie, à une douzaine de kilomètres du prieuré) :\naller 6h25, 8h12, 9h39, 13h56, 16h25, 17h59, 19h25\nretour 6h05, 7h08, 10h54, 12h09, 16h08, 17h09, 18h42\n\nVers Cloyes (sur place, moins de trains) :\naller 13h56 (arrivée 15h33), 19h25 (arrivée 21h17)\nretour 5h53 (arrivée 7h45), 16h56 (arrivée 18h36)\n\nPour être à la mairie à 15h, prenez un train du matin jusqu'à Châteaudun.",
         "lien": "https://www.sncf-connect.com/train/horaires/paris/chateaudun",
         "lienTexte": "Horaires Paris → Châteaudun sur SNCF Connect"
-      },
-      {
-        "depuis": "Beauvais",
-        "resume": "via Paris · 3 h 30 environ",
-        "details": "TER de Beauvais à Paris-Nord : 1 h 10 à 1 h 20, une vingtaine de trains par jour.\nMétro ligne 5 direct de Gare du Nord à Gare d'Austerlitz : environ 25 min.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).",
-        "lien": "https://www.sncf-connect.com/train/horaires/beauvais/paris",
-        "lienTexte": "Horaires Beauvais → Paris sur SNCF Connect"
-      },
-      {
-        "depuis": "Caen",
-        "resume": "via Paris · 4 h 30 environ",
-        "details": "Train de Caen à Paris-Saint-Lazare : environ 2 h, une vingtaine de trains par jour.\nMétro ligne 14 jusqu'à Gare de Lyon, puis une douzaine de minutes à pied en traversant la Seine jusqu'à la gare d'Austerlitz.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).",
-        "lien": "https://www.sncf-connect.com/train/horaires/caen/paris",
-        "lienTexte": "Horaires Caen → Paris sur SNCF Connect"
-      },
-      {
-        "depuis": "Rennes",
-        "resume": "via Paris · 4 h environ",
-        "details": "TGV de Rennes à Paris-Montparnasse : environ 1 h 30.\nDe Montparnasse à Austerlitz : bus 91 direct, ou métro ligne 6 puis ligne 5 (changement à Place d'Italie), environ 25 min.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).\n\nAutre possibilité : depuis Montparnasse, TER vers Chartres avec correspondance pour Châteaudun.",
-        "lien": "https://www.sncf-connect.com/train/horaires/rennes/paris",
-        "lienTexte": "Horaires Rennes → Paris sur SNCF Connect"
-      },
-      {
-        "depuis": "Vannes",
-        "resume": "via Paris · 5 h environ",
-        "details": "TGV direct de Vannes à Paris-Montparnasse : 2 h 40 à 2 h 50, une dizaine de trains par jour.\nDe Montparnasse à Austerlitz : bus 91 direct, ou métro ligne 6 puis ligne 5 (changement à Place d'Italie), environ 25 min.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).",
-        "lien": "https://www.sncf-connect.com/train/horaires/vannes/paris",
-        "lienTexte": "Horaires Vannes → Paris sur SNCF Connect"
-      },
-      {
-        "depuis": "la Guadeloupe",
-        "resume": "vol + train via Paris",
-        "details": "Vol direct Pointe-à-Pitre → Paris (environ 8 h).\n\nArrivée à Orly : métro ligne 14 jusqu'à Gare de Lyon, puis une douzaine de minutes à pied jusqu'à la gare d'Austerlitz.\nArrivée à Charles-de-Gaulle : RER B jusqu'à Gare du Nord, puis métro ligne 5 jusqu'à Gare d'Austerlitz.\nEnsuite, depuis Paris-Austerlitz, TER Rémi direct pour Châteaudun ou Cloyes (voir « Depuis Paris »).",
-        "lien": "https://www.sncf-connect.com",
-        "lienTexte": "Préparer le trajet sur SNCF Connect"
       }
     ],
     "lien": {
