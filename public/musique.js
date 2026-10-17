@@ -1,47 +1,31 @@
-// Musique de fond « notre chanson » : démarre après l'intro, volume doux, bouton flottant pour couper.
-// Les téléphones n'autorisent le son qu'après un toucher : intro.js appelle ilesMusique.debloquer()
-// au moment où l'invité touche « Embarquer ».
+// Musique de fond « notre chanson » : joue par défaut après l'intro, bouton flottant pour couper.
+// - Lecteur audio simple (pas de Web Audio) : sur iPhone il joue même en mode silencieux, comme une vidéo.
+// - Le fichier est déjà mixé doucement, car l'iPhone ignore le réglage de volume des pages web.
+// - Les téléphones exigent un toucher avant tout son : le toucher « Embarquer » débloque la lecture ;
+//   sinon (intro déjà vue), la musique démarre au premier toucher sur la page.
 (function () {
   const SRC = window.ILES_MUSIQUE || '/sons/chanson.mp3';
-  const VOLUME = 0.22; // pas trop fort
-  let audio = null, ac = null, gain = null, joue = false, bouton = null, demarre = false;
-  let coupe = false;
-  try { coupe = localStorage.getItem('musique-coupee') === '1'; } catch (e) { /* stockage indisponible */ }
+  let audio = null, joue = false, bouton = null, demarre = false, attente = false;
+  let coupe = false; // coupé par l'invité pendant cette visite
+  try { coupe = sessionStorage.getItem('musique-coupee') === '1'; } catch (e) { /* ignore */ }
 
   function construire() {
     if (audio) return;
     audio = new Audio(SRC);
     audio.loop = true;
     audio.preload = 'auto';
-    const AC = window.AudioContext || window.webkitAudioContext;
-    try {
-      ac = window.ilesAudio || (AC ? new AC() : null);
-      if (ac) {
-        window.ilesAudio = ac;
-        const src = ac.createMediaElementSource(audio);
-        gain = ac.createGain();
-        gain.gain.value = 0;
-        src.connect(gain); gain.connect(ac.destination);
-      }
-    } catch (e) { gain = null; }
-    if (!gain) audio.volume = 0;
+    audio.setAttribute('playsinline', '');
   }
 
-  function volume(v, duree) {
-    if (gain && ac) {
-      const t = ac.currentTime;
-      gain.gain.cancelScheduledValues(t);
-      gain.gain.setValueAtTime(gain.gain.value, t);
-      gain.gain.linearRampToValueAtTime(v, t + duree);
-    } else if (audio) {
-      audio.volume = v;
-    }
-  }
-
-  function lire() {
-    if (ac && ac.resume) ac.resume();
-    const p = audio.play();
-    return p && p.then ? p : Promise.resolve();
+  function fondu(vers, ms) {
+    // Ordinateur : fondu doux. iPhone : le volume est fixe (fichier déjà doux), ce code est sans effet.
+    if (!audio) return;
+    const depart = audio.volume, t0 = performance.now();
+    (function pas(now) {
+      const k = Math.min(1, (now - t0) / ms);
+      try { audio.volume = depart + (vers - depart) * k; } catch (e) { return; }
+      if (k < 1) requestAnimationFrame(pas);
+    })(t0);
   }
 
   function majBouton() {
@@ -52,10 +36,37 @@
     bouton.title = joue ? 'Couper la musique' : 'Écouter notre chanson';
   }
 
-  // Appelé pendant le toucher « Embarquer » : lance la lecture en silence pour la débloquer
+  function jouer(depuisDebut) {
+    construire();
+    if (depuisDebut) { try { audio.currentTime = 0; } catch (e) { /* ignore */ } }
+    audio.muted = false;
+    const p = audio.play();
+    return (p && p.then ? p : Promise.resolve()).then(() => {
+      joue = true; majBouton();
+      try { audio.volume = 0; } catch (e) { /* ignore */ }
+      fondu(1, 2000);
+    });
+  }
+
+  // Si le téléphone a bloqué le démarrage : on relance au tout premier toucher sur la page
+  function auPremierToucher() {
+    if (attente) return;
+    attente = true;
+    const go = (e) => {
+      if (bouton && e && bouton.contains(e.target)) return; // le bouton gère lui-même
+      ['pointerup', 'touchend', 'click', 'keydown'].forEach((t) => document.removeEventListener(t, go, true));
+      attente = false;
+      if (!coupe && !joue) jouer(false).catch(() => {});
+    };
+    ['pointerup', 'touchend', 'click', 'keydown'].forEach((t) => document.addEventListener(t, go, true));
+  }
+
+  // Appelé pendant le toucher « Embarquer » : lecture muette pour obtenir l'autorisation du téléphone
   function debloquer() {
     construire();
-    lire().catch(() => {});
+    audio.muted = true;
+    const p = audio.play();
+    if (p && p.catch) p.catch(() => {});
   }
 
   // Appelé à la fin de l'intro
@@ -63,25 +74,20 @@
     if (bouton) bouton.hidden = false;
     if (demarre) return;
     demarre = true;
-    if (coupe) { if (audio) audio.pause(); joue = false; majBouton(); return; }
-    construire();
-    try { audio.currentTime = 0; } catch (e) { /* ignore */ }
-    lire().then(() => { joue = true; volume(VOLUME, 2.5); majBouton(); })
-      .catch(() => { joue = false; majBouton(); }); // pas de toucher préalable : l'invité lancera via le bouton
+    if (coupe) { if (audio) audio.pause(); majBouton(); return; }
+    jouer(true).catch(() => { joue = false; majBouton(); auPremierToucher(); });
   }
 
   function basculer() {
-    construire();
     if (joue) {
       coupe = true; joue = false;
-      volume(0, 0.4);
-      setTimeout(() => { if (!joue && audio) audio.pause(); }, 450);
+      fondu(0, 350);
+      setTimeout(() => { if (!joue && audio) audio.pause(); }, 380);
     } else {
       coupe = false;
-      lire().then(() => { joue = true; volume(VOLUME, 1); majBouton(); }).catch(() => {});
-      joue = true;
+      jouer(false).catch(() => {});
     }
-    try { localStorage.setItem('musique-coupee', coupe ? '1' : '0'); } catch (e) { /* ignore */ }
+    try { sessionStorage.setItem('musique-coupee', coupe ? '1' : '0'); } catch (e) { /* ignore */ }
     majBouton();
   }
 

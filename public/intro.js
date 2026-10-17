@@ -138,20 +138,6 @@
     var easeInOut = function (k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; };
     var clamp = function (k) { return Math.max(0, Math.min(1, k)); };
 
-    // Débloque le son du site (les téléphones l'exigent après un toucher) :
-    // il servira au tableau des départs, pas pendant le vol
-    function debloquerSon() {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC || window.ilesAudio) return;
-      try {
-        var ac = new AC();
-        var b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource();
-        s.buffer = b; s.connect(ac.destination); s.start(0);
-        if (ac.resume) ac.resume();
-        window.ilesAudio = ac;
-      } catch (e) { /* pas de son, tant pis */ }
-    }
-
     // Signal cabine (enregistrement Pixabay) joué au décollage
     var signal = null;
     try { signal = new Audio(window.ILES_SON_CABINE || '/sons/cabine.mp3'); signal.preload = 'auto'; signal.volume = 0.9; } catch (e) { signal = null; }
@@ -160,7 +146,6 @@
       if (lance) return; lance = true;
       porte.classList.add('cachee');
       if (signal) { var p = signal.play(); if (p && p.catch) p.catch(function () {}); }
-      debloquerSon();
       if (window.ilesMusique) window.ilesMusique.debloquer();
       secours = setTimeout(go, 12000);
       requestAnimationFrame(frame);
