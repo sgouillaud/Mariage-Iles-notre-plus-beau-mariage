@@ -60,7 +60,51 @@
     c.querySelectorAll('b').forEach((b) => { b.textContent = car; });
     c.car = car;
   }
+  // ---------- Sons du tableau (seulement si l'invité a touché « Embarquer ») ----------
+  let bruitClac = null, dernierClac = 0, sonAutoriseApres = 0;
+  function clac() {
+    const ac = window.ilesAudio;
+    if (!ac || ac.state !== 'running') return;
+    const now = performance.now();
+    if (now < sonAutoriseApres || now - dernierClac < 22) return; // évite la bouillie sonore
+    dernierClac = now;
+    try {
+      if (!bruitClac) {
+        bruitClac = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.03), ac.sampleRate);
+        const d = bruitClac.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+      }
+      const src = ac.createBufferSource(); src.buffer = bruitClac;
+      const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.2;
+      f.frequency.value = 1500 + Math.random() * 1500;
+      const g = ac.createGain(); g.gain.value = 0.32 + Math.random() * 0.12;
+      src.connect(f); f.connect(g); g.connect(ac.destination);
+      src.start();
+    } catch (e) { /* ignore */ }
+  }
+  // « Ding ding dong » d'annonce : trois notes de carillon descendantes
+  function carillon() {
+    const ac = window.ilesAudio;
+    if (!ac || ac.state !== 'running') return 0;
+    try {
+      const t = ac.currentTime + 0.05;
+      [[1046.5, 0], [880, 0.42], [698.5, 0.84]].forEach(([freq, dt]) => {
+        [[1, 0.22], [2.76, 0.05], [5.4, 0.02]].forEach(([mult, vol]) => {
+          const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = freq * mult;
+          const g = ac.createGain();
+          g.gain.setValueAtTime(0.0001, t + dt);
+          g.gain.exponentialRampToValueAtTime(vol, t + dt + 0.015);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dt + (mult === 1 ? 1.6 : 0.6));
+          o.connect(g); g.connect(ac.destination);
+          o.start(t + dt); o.stop(t + dt + 1.7);
+        });
+      });
+      return 1500;
+    } catch (e) { return 0; }
+  }
+
   function palette(c, car, ms) {
+    clac();
     const [top, bot, ftop, fbot] = c.querySelectorAll('.half');
     const ancien = c.car;
     top.firstChild.textContent = car;
@@ -116,7 +160,10 @@
     const unite = j > 1 ? 'JOURS' : 'JOUR';
     const statut = j > 0 ? "À L'HEURE" : j === 0 ? 'EMBARQUEMENT' : 'ARRIVÉ';
     $('#board').setAttribute('aria-label', `Tableau des départs : vol IL 2627 pour Cloyes-les-Trois-Rivières, départ dans ${jours} ${unite.toLowerCase()}, ${statut.toLowerCase()}`);
-    const t0 = performance.now();
+    // Le carillon d'annonce d'abord, puis le cliquetis des palettes
+    const attente = carillon();
+    sonAutoriseApres = performance.now() + attente;
+    const t0 = performance.now() + attente;
     // Calendrier du suspense (ms après le début) : la destination, puis les jours chiffre par chiffre
     const lignes = [
       [$('#flaps-dest1'), 'CLOYES LES', false, LETTRES, (k) => 1700 + k * 110],

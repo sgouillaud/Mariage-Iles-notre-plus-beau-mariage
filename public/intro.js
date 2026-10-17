@@ -134,60 +134,28 @@
 
     // Vol plus court (3,5 s) puis 2,5 s pour lire l'arrivée
     var T_VOL0 = 0.3, T_VOL1 = 3.8, T_FIN = 6.3;
-    var t0 = null, decalage = 0, fini = false, lance = false, son = null;
+    var t0 = null, decalage = 0, fini = false, lance = false;
     var easeInOut = function (k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; };
     var clamp = function (k) { return Math.max(0, Math.min(1, k)); };
 
-    // Bruit de gros avion de ligne, synthétisé (aucun fichier) : souffle des réacteurs qui
-    // approche, passe de gauche à droite puis s'éloigne
-    function bruitAvion(duree) {
+    // Débloque le son du site (les téléphones l'exigent après un toucher) :
+    // il servira au tableau des départs, pas pendant le vol
+    function debloquerSon() {
       var AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return null;
+      if (!AC || window.ilesAudio) return;
       try {
         var ac = new AC();
-        var n = ac.sampleRate * (duree + 1), buf = ac.createBuffer(2, n, ac.sampleRate);
-        for (var c = 0; c < 2; c++) {
-          var d = buf.getChannelData(c), last = 0;
-          for (var i = 0; i < n; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }
-        }
-        var src = ac.createBufferSource(); src.buffer = buf;
-        // Grondement grave : souffle filtré très bas + deux sous-basses légèrement désaccordées
-        var bp = ac.createBiquadFilter(); bp.type = 'lowpass'; bp.Q.value = 0.7;
-        var bp2 = ac.createBiquadFilter(); bp2.type = 'lowpass'; bp2.frequency.value = 900;
-        var souffleG = ac.createGain(); souffleG.gain.value = 1.4;
-        var hum = ac.createOscillator(); hum.type = 'sawtooth';
-        var hum2 = ac.createOscillator(); hum2.type = 'triangle';
-        var humF = ac.createBiquadFilter(); humF.type = 'lowpass'; humF.frequency.value = 140;
-        var humG = ac.createGain(); humG.gain.value = 0.22;
-        var g = ac.createGain();
-        var pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
-        var t = ac.currentTime, mid = t + duree * 0.55, fin = t + duree;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.85, mid);
-        g.gain.exponentialRampToValueAtTime(0.0001, fin);
-        bp.frequency.setValueAtTime(110, t);
-        bp.frequency.exponentialRampToValueAtTime(420, mid);   // l'avion se rapproche
-        bp.frequency.exponentialRampToValueAtTime(80, fin);    // puis s'éloigne (effet Doppler)
-        hum.frequency.setValueAtTime(48, t);
-        hum.frequency.exponentialRampToValueAtTime(58, mid);
-        hum.frequency.exponentialRampToValueAtTime(38, fin);
-        hum2.frequency.setValueAtTime(50.5, t);
-        hum2.frequency.exponentialRampToValueAtTime(60.5, mid);
-        hum2.frequency.exponentialRampToValueAtTime(39.5, fin);
-        if (pan) { pan.pan.setValueAtTime(-0.7, t); pan.pan.linearRampToValueAtTime(0.7, fin); }
-        src.connect(bp); bp.connect(bp2); bp2.connect(souffleG); souffleG.connect(g);
-        hum.connect(humF); hum2.connect(humF); humF.connect(humG); humG.connect(g);
-        if (pan) { g.connect(pan); pan.connect(ac.destination); } else g.connect(ac.destination);
-        src.start(t); hum.start(t); hum2.start(t);
-        src.stop(fin + 0.1); hum.stop(fin + 0.1); hum2.stop(fin + 0.1);
-        return { stop: function () { try { g.gain.cancelScheduledValues(ac.currentTime); g.gain.setTargetAtTime(0.0001, ac.currentTime, 0.15); setTimeout(function () { ac.close(); }, 600); } catch (e) { /* ignore */ } } };
-      } catch (e) { return null; }
+        var b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource();
+        s.buffer = b; s.connect(ac.destination); s.start(0);
+        if (ac.resume) ac.resume();
+        window.ilesAudio = ac;
+      } catch (e) { /* pas de son, tant pis */ }
     }
 
     function lancer() {
       if (lance) return; lance = true;
       porte.classList.add('cachee');
-      son = bruitAvion(T_VOL1 + 1.2);
+      debloquerSon();
       secours = setTimeout(go, 12000);
       requestAnimationFrame(frame);
     }
@@ -197,7 +165,7 @@
       if (!lance) { lancer(); return; }
       if (t0 === null) return;
       var t = (performance.now() - t0) / 1000 + decalage;
-      if (t < T_FIN) { decalage += T_FIN - t; if (son) son.stop(); }
+      if (t < T_FIN) decalage += T_FIN - t;
     });
 
     function frame(now) {
