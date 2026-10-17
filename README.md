@@ -37,9 +37,9 @@ mariage-iles/
 ## 2. Ce que fait le site
 
 **Pour les invités**
-- Ouverture « notre itinéraire » : bouton « Embarquer » (qui autorise le son), puis un petit avion relie nos îles jusqu'à Cloyes (vol de 3,5 s, 2,5 s pour lire l'arrivée ; un toucher la fait passer). Le logo se pose ensuite comme un tampon de passeport.
+- Ouverture « notre itinéraire » : bouton « Embarquer » (qui autorise le son), signal cabine au décollage (public/sons/cabine.mp3, Pixabay, libre de droits), puis un petit avion relie nos îles jusqu'à Cloyes (vol de 3,5 s, 2,5 s pour lire l'arrivée ; un toucher la fait passer). Le logo se pose ensuite comme un tampon de passeport.
   Jouée une fois par visite, et désactivée automatiquement si le téléphone demande moins d'animations.
-- Tableau des départs à palettes (style aéroport), précédé d'un carillon « ding ding dong » et accompagné du cliquetis des palettes, qui défile jusqu'au nombre de jours restants ; les sections apparaissent au fil du défilement.
+- Tableau des départs à palettes (style aéroport), accompagné du cliquetis des palettes, qui défile jusqu'au nombre de jours restants ; les sections apparaissent au fil du défilement.
 - Formulaire : nom, prénom, email, téléphone, présence (oui / non), moments (mairie, cérémonie & cocktail,
   dîner, brunch), hébergement (logé sur place ou par ses propres moyens), accompagnant(e), enfants (nom, prénom, âge),
   allergies et régime, petit mot.

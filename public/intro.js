@@ -152,9 +152,14 @@
       } catch (e) { /* pas de son, tant pis */ }
     }
 
+    // Signal cabine (enregistrement Pixabay) joué au décollage
+    var signal = null;
+    try { signal = new Audio(window.ILES_SON_CABINE || '/sons/cabine.mp3'); signal.preload = 'auto'; signal.volume = 0.9; } catch (e) { signal = null; }
+
     function lancer() {
       if (lance) return; lance = true;
       porte.classList.add('cachee');
+      if (signal) { var p = signal.play(); if (p && p.catch) p.catch(function () {}); }
       debloquerSon();
       secours = setTimeout(go, 12000);
       requestAnimationFrame(frame);

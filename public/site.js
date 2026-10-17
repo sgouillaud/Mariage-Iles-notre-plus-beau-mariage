@@ -82,27 +82,6 @@
       src.start();
     } catch (e) { /* ignore */ }
   }
-  // « Ding ding dong » d'annonce : trois notes de carillon descendantes
-  function carillon() {
-    const ac = window.ilesAudio;
-    if (!ac || ac.state !== 'running') return 0;
-    try {
-      const t = ac.currentTime + 0.05;
-      [[1046.5, 0], [880, 0.42], [698.5, 0.84]].forEach(([freq, dt]) => {
-        [[1, 0.22], [2.76, 0.05], [5.4, 0.02]].forEach(([mult, vol]) => {
-          const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = freq * mult;
-          const g = ac.createGain();
-          g.gain.setValueAtTime(0.0001, t + dt);
-          g.gain.exponentialRampToValueAtTime(vol, t + dt + 0.015);
-          g.gain.exponentialRampToValueAtTime(0.0001, t + dt + (mult === 1 ? 1.6 : 0.6));
-          o.connect(g); g.connect(ac.destination);
-          o.start(t + dt); o.stop(t + dt + 1.7);
-        });
-      });
-      return 1500;
-    } catch (e) { return 0; }
-  }
-
   function palette(c, car, ms) {
     clac();
     const [top, bot, ftop, fbot] = c.querySelectorAll('.half');
@@ -160,8 +139,8 @@
     const unite = j > 1 ? 'JOURS' : 'JOUR';
     const statut = j > 0 ? "À L'HEURE" : j === 0 ? 'EMBARQUEMENT' : 'ARRIVÉ';
     $('#board').setAttribute('aria-label', `Tableau des départs : vol IL 2627 pour Cloyes-les-Trois-Rivières, départ dans ${jours} ${unite.toLowerCase()}, ${statut.toLowerCase()}`);
-    // Le carillon d'annonce d'abord, puis le cliquetis des palettes
-    const attente = carillon();
+    // Cliquetis des palettes (le signal sonore est joué au décollage de l'avion)
+    const attente = 0;
     sonAutoriseApres = performance.now() + attente;
     const t0 = performance.now() + attente;
     // Calendrier du suspense (ms après le début) : la destination, puis les jours chiffre par chiffre
