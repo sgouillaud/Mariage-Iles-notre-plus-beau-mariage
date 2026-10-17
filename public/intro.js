@@ -151,27 +151,35 @@
           for (var i = 0; i < n; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }
         }
         var src = ac.createBufferSource(); src.buffer = buf;
-        var bp = ac.createBiquadFilter(); bp.type = 'lowpass'; bp.Q.value = 0.8;
+        // Grondement grave : souffle filtré très bas + deux sous-basses légèrement désaccordées
+        var bp = ac.createBiquadFilter(); bp.type = 'lowpass'; bp.Q.value = 0.7;
+        var bp2 = ac.createBiquadFilter(); bp2.type = 'lowpass'; bp2.frequency.value = 900;
+        var souffleG = ac.createGain(); souffleG.gain.value = 1.4;
         var hum = ac.createOscillator(); hum.type = 'sawtooth';
-        var humF = ac.createBiquadFilter(); humF.type = 'lowpass'; humF.frequency.value = 220;
-        var humG = ac.createGain(); humG.gain.value = 0.05;
+        var hum2 = ac.createOscillator(); hum2.type = 'triangle';
+        var humF = ac.createBiquadFilter(); humF.type = 'lowpass'; humF.frequency.value = 140;
+        var humG = ac.createGain(); humG.gain.value = 0.22;
         var g = ac.createGain();
         var pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
         var t = ac.currentTime, mid = t + duree * 0.55, fin = t + duree;
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.9, mid);
+        g.gain.exponentialRampToValueAtTime(0.85, mid);
         g.gain.exponentialRampToValueAtTime(0.0001, fin);
-        bp.frequency.setValueAtTime(350, t);
-        bp.frequency.exponentialRampToValueAtTime(1400, mid);   // l'avion se rapproche
-        bp.frequency.exponentialRampToValueAtTime(260, fin);    // puis s'éloigne (effet Doppler)
-        hum.frequency.setValueAtTime(95, t);
-        hum.frequency.exponentialRampToValueAtTime(110, mid);
-        hum.frequency.exponentialRampToValueAtTime(70, fin);
-        if (pan) { pan.pan.setValueAtTime(-0.8, t); pan.pan.linearRampToValueAtTime(0.8, fin); }
-        src.connect(bp); bp.connect(g);
-        hum.connect(humF); humF.connect(humG); humG.connect(g);
+        bp.frequency.setValueAtTime(110, t);
+        bp.frequency.exponentialRampToValueAtTime(420, mid);   // l'avion se rapproche
+        bp.frequency.exponentialRampToValueAtTime(80, fin);    // puis s'éloigne (effet Doppler)
+        hum.frequency.setValueAtTime(48, t);
+        hum.frequency.exponentialRampToValueAtTime(58, mid);
+        hum.frequency.exponentialRampToValueAtTime(38, fin);
+        hum2.frequency.setValueAtTime(50.5, t);
+        hum2.frequency.exponentialRampToValueAtTime(60.5, mid);
+        hum2.frequency.exponentialRampToValueAtTime(39.5, fin);
+        if (pan) { pan.pan.setValueAtTime(-0.7, t); pan.pan.linearRampToValueAtTime(0.7, fin); }
+        src.connect(bp); bp.connect(bp2); bp2.connect(souffleG); souffleG.connect(g);
+        hum.connect(humF); hum2.connect(humF); humF.connect(humG); humG.connect(g);
         if (pan) { g.connect(pan); pan.connect(ac.destination); } else g.connect(ac.destination);
-        src.start(t); hum.start(t); src.stop(fin + 0.1); hum.stop(fin + 0.1);
+        src.start(t); hum.start(t); hum2.start(t);
+        src.stop(fin + 0.1); hum.stop(fin + 0.1); hum2.stop(fin + 0.1);
         return { stop: function () { try { g.gain.cancelScheduledValues(ac.currentTime); g.gain.setTargetAtTime(0.0001, ac.currentTime, 0.15); setTimeout(function () { ac.close(); }, 600); } catch (e) { /* ignore */ } } };
       } catch (e) { return null; }
     }
