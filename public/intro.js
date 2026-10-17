@@ -1,6 +1,6 @@
 // Intro « notre itinéraire » : sur une carte de voyage ancienne, un petit avion relie nos îles une à une
 // (Maurice, La Réunion, Guadeloupe, Martinique, les Saintes, Koh Samui, la Corse) jusqu'à Yron.
-// Environ 6 secondes ; un toucher la fait passer. Jouée une fois par visite ;
+// S'ouvre sur un bouton « Embarquer » (pour le son), puis environ 6 secondes ; un toucher la fait passer. Jouée une fois par visite ;
 // désactivée si l'appareil demande moins d'animations.
 (function () {
   var html = document.documentElement;
@@ -123,15 +123,73 @@
     passer.className = 'i-passer'; passer.textContent = 'Touchez pour passer';
     box.appendChild(passer);
 
-    var T_VOL0 = 0.4, T_VOL1 = 5.4, T_FIN = 6.2;
-    var t0 = null, decalage = 0, fini = false;
+    // Porte d'embarquement : le son ne peut démarrer qu'après un geste de l'invité
+    clearTimeout(secours);
+    var porte = document.createElement('div');
+    porte.className = 'i-porte';
+    porte.innerHTML = '<span class="i-eyebrow">Vol IL 2627 · 26.06.2027</span>' +
+      '<button type="button" class="i-embarquer">Embarquer <span aria-hidden="true">✈</span></button>' +
+      '<span class="i-son">🔊 Montez le son</span>';
+    box.appendChild(porte);
+
+    // Vol plus court (3,5 s) puis 2,5 s pour lire l'arrivée
+    var T_VOL0 = 0.3, T_VOL1 = 3.8, T_FIN = 6.3;
+    var t0 = null, decalage = 0, fini = false, lance = false, son = null;
     var easeInOut = function (k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; };
     var clamp = function (k) { return Math.max(0, Math.min(1, k)); };
 
+    // Bruit de gros avion de ligne, synthétisé (aucun fichier) : souffle des réacteurs qui
+    // approche, passe de gauche à droite puis s'éloigne
+    function bruitAvion(duree) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      try {
+        var ac = new AC();
+        var n = ac.sampleRate * (duree + 1), buf = ac.createBuffer(2, n, ac.sampleRate);
+        for (var c = 0; c < 2; c++) {
+          var d = buf.getChannelData(c), last = 0;
+          for (var i = 0; i < n; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }
+        }
+        var src = ac.createBufferSource(); src.buffer = buf;
+        var bp = ac.createBiquadFilter(); bp.type = 'lowpass'; bp.Q.value = 0.8;
+        var hum = ac.createOscillator(); hum.type = 'sawtooth';
+        var humF = ac.createBiquadFilter(); humF.type = 'lowpass'; humF.frequency.value = 220;
+        var humG = ac.createGain(); humG.gain.value = 0.05;
+        var g = ac.createGain();
+        var pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
+        var t = ac.currentTime, mid = t + duree * 0.55, fin = t + duree;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.9, mid);
+        g.gain.exponentialRampToValueAtTime(0.0001, fin);
+        bp.frequency.setValueAtTime(350, t);
+        bp.frequency.exponentialRampToValueAtTime(1400, mid);   // l'avion se rapproche
+        bp.frequency.exponentialRampToValueAtTime(260, fin);    // puis s'éloigne (effet Doppler)
+        hum.frequency.setValueAtTime(95, t);
+        hum.frequency.exponentialRampToValueAtTime(110, mid);
+        hum.frequency.exponentialRampToValueAtTime(70, fin);
+        if (pan) { pan.pan.setValueAtTime(-0.8, t); pan.pan.linearRampToValueAtTime(0.8, fin); }
+        src.connect(bp); bp.connect(g);
+        hum.connect(humF); humF.connect(humG); humG.connect(g);
+        if (pan) { g.connect(pan); pan.connect(ac.destination); } else g.connect(ac.destination);
+        src.start(t); hum.start(t); src.stop(fin + 0.1); hum.stop(fin + 0.1);
+        return { stop: function () { try { g.gain.cancelScheduledValues(ac.currentTime); g.gain.setTargetAtTime(0.0001, ac.currentTime, 0.15); setTimeout(function () { ac.close(); }, 600); } catch (e) { /* ignore */ } } };
+      } catch (e) { return null; }
+    }
+
+    function lancer() {
+      if (lance) return; lance = true;
+      porte.classList.add('cachee');
+      son = bruitAvion(T_VOL1 + 1.2);
+      secours = setTimeout(go, 12000);
+      requestAnimationFrame(frame);
+    }
+    porte.querySelector('.i-embarquer').addEventListener('click', function (e) { e.stopPropagation(); lancer(); });
+
     box.addEventListener('pointerdown', function () {
+      if (!lance) { lancer(); return; }
       if (t0 === null) return;
       var t = (performance.now() - t0) / 1000 + decalage;
-      if (t < T_FIN) decalage += T_FIN - t;
+      if (t < T_FIN) { decalage += T_FIN - t; if (son) son.stop(); }
     });
 
     function frame(now) {
@@ -159,6 +217,5 @@
       }
       requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
   });
 })();

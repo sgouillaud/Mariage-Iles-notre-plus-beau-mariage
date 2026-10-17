@@ -299,3 +299,12 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 .coeur{width:15px;height:14px;fill:var(--terracotta);animation:bat 2.4s ease-in-out infinite}
 @keyframes bat{0%,60%,100%{transform:scale(1)}10%{transform:scale(1.18)}20%{transform:scale(1)}30%{transform:scale(1.12)}}
 @media(prefers-reduced-motion:reduce){.coeur{animation:none}}
+
+/* ===== PORTE D'EMBARQUEMENT ===== */
+.i-porte{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(251,247,240,.82);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);transition:opacity .5s ease;z-index:2}
+.i-porte.cachee{opacity:0;pointer-events:none}
+.i-embarquer{font:600 18px var(--sans);color:#fff;background:var(--terracotta);border:0;border-radius:99px;padding:16px 34px;cursor:pointer;box-shadow:0 10px 26px rgba(192,100,62,.35);animation:respire 2.2s ease-in-out infinite}
+.i-embarquer:focus-visible{outline:3px solid var(--canard);outline-offset:3px}
+.i-son{font-size:13px;color:var(--encre-2)}
+@keyframes respire{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.ouverture:not(.on) .i-passer{display:none}
