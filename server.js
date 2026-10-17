@@ -77,6 +77,8 @@ function createApp(options = {}) {
   const LIBRES = new Set(['/invitation.css', '/invitation.js', '/logo.webp', '/apercu-whatsapp.jpg',
     '/admin', '/admin.html', '/admin.css', '/admin.js', '/api/health', '/api/invite']);
   app.use((req, res, next) => {
+    // La chanson n'est servie que si le site est protégé par un code
+    if (!guestCode && req.path.startsWith('/sons/chanson')) return res.status(404).type('text').send('Introuvable.');
     if (invite(req) || LIBRES.has(req.path) || req.path.startsWith('/api/admin')) return next();
     // Lien d'invitation avec le code intégré : …/?code=XXXX
     if (req.method === 'GET' && req.query.code !== undefined) {

@@ -160,3 +160,15 @@ test('Site privé : code invité requis, lien avec code, aperçu WhatsApp et adm
   assert.equal(r.status, 302);
   assert.ok(r.headers['set-cookie'][0].startsWith('iles_invite='));
 });
+
+test('Chanson : jamais servie sans code invité, servie aux invités connectés', async () => {
+  const { app } = setup();
+  assert.equal((await request(app).get('/sons/chanson.mp3')).status, 404);
+  const db = openDb(':memory:');
+  const prive = createApp({ db, adminPassword: PWD, sessionSecret: 'x'.repeat(40), env: 'test', guestCode: 'Iles2027' });
+  assert.equal((await request(prive).get('/sons/chanson.mp3')).status, 404);
+  const c = (await request(prive).post('/api/invite').send({ code: 'Iles2027' })).headers['set-cookie'];
+  const r = await request(prive).get('/sons/chanson.mp3').set('Cookie', c);
+  assert.equal(r.status, 200);
+  assert.match(r.headers['content-type'], /audio\/mpeg/);
+});

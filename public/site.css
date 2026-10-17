@@ -308,3 +308,19 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 .i-son{font-size:13px;color:var(--encre-2)}
 @keyframes respire{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 .ouverture:not(.on) .i-passer{display:none}
+
+/* ===== BOUTON MUSIQUE (suit le défilement) ===== */
+.musique{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;width:50px;height:50px;border-radius:50%;border:0;cursor:pointer;
+  display:grid;place-items:center;background:var(--canard);color:var(--creme);box-shadow:0 8px 22px rgba(31,92,91,.35);transition:transform .2s ease,background .2s ease}
+.musique[hidden]{display:none}
+.musique:hover{transform:scale(1.06)}
+.musique:focus-visible{outline:3px solid var(--terracotta);outline-offset:3px}
+.musique .eq{display:none;align-items:flex-end;gap:3px;height:18px}
+.musique .eq i{display:block;width:3px;background:currentColor;border-radius:2px;height:6px;animation:eq 1s ease-in-out infinite}
+.musique .eq i:nth-child(2){animation-delay:.25s}.musique .eq i:nth-child(3){animation-delay:.5s}
+@keyframes eq{0%,100%{height:5px}50%{height:18px}}
+.musique .muet{width:22px;height:22px;fill:currentColor}
+.musique.joue .eq{display:flex}
+.musique.joue .muet{display:none}
+.musique:not(.joue){background:var(--papier);color:var(--canard);border:1.5px solid var(--canard)}
+@media(prefers-reduced-motion:reduce){.musique .eq i{animation:none;height:12px}}

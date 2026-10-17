@@ -161,6 +161,7 @@
       porte.classList.add('cachee');
       if (signal) { var p = signal.play(); if (p && p.catch) p.catch(function () {}); }
       debloquerSon();
+      if (window.ilesMusique) window.ilesMusique.debloquer();
       secours = setTimeout(go, 12000);
       requestAnimationFrame(frame);
     }

@@ -120,6 +120,7 @@ aussi être branché dans **Settings → Networking → Custom Domain**.
 | Les infos pratiques, les trajets dépliables (voiture, train) et leurs liens | `/admin` → Infos pratiques (sans toucher au code) |
 | Les horaires du programme, notre histoire, les textes | `public/index.html` |
 | Les couleurs | `public/site.css`, variables en haut du fichier |
+| La musique de fond | remplacez `public/sons/chanson.mp3` (servie uniquement si `GUEST_CODE` est défini) |
 | Le logo | remplacez `public/logo.webp` (et `public/apercu-whatsapp.jpg` pour WhatsApp) |
 
 ## 6. Données personnelles
