@@ -8,6 +8,7 @@ const { openDb, getInfos, setInfos } = require('./src/db');
 const { cleanRsvp, RsvpError } = require('./src/rsvp');
 const { cleanInfos } = require('./src/infos');
 const { COOKIE, MAX_AGE_MS, checkPassword, createToken, verifyToken, rateLimiter } = require('./src/auth');
+const { INVITE_COOKIE, INVITE_MAX_AGE_MS, createInviteToken, verifyInviteToken } = require('./src/invite');
 
 function csvCell(v) {
   const s = String(v ?? '');
@@ -32,8 +33,14 @@ function createApp(options = {}) {
     throw new Error('SESSION_SECRET manquant ou trop court (32 caractères minimum).');
   }
 
+  // Code d'accès des invités : si défini, le site n'est visible qu'avec ce code
+  const guestCode = String(options.guestCode ?? process.env.GUEST_CODE ?? '').trim();
+  if (guestCode && guestCode.length < 4) throw new Error('GUEST_CODE trop court (4 caractères minimum).');
+  if (!guestCode) console.warn('GUEST_CODE absent : le site des invités est public.');
+
   const loginLimiter = rateLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
   const rsvpLimiter = rateLimiter({ windowMs: 60 * 60 * 1000, max: options.rsvpRateMax ?? 30 });
+  const inviteLimiter = rateLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
 
   const app = express();
   app.set('trust proxy', 1);
@@ -45,21 +52,55 @@ function createApp(options = {}) {
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
       'Referrer-Policy': 'same-origin',
+      'X-Robots-Tag': 'noindex, nofollow',
       'Content-Security-Policy':
         "default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; " +
-        "font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+        "font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; media-src 'self'; frame-ancestors 'none'",
     });
     next();
   });
 
   // ---------- Pages ----------
   const pub = path.join(__dirname, 'public');
+  const withOrigin = (tpl, req) => tpl.replaceAll('__ORIGIN__', `${req.protocol}://${req.get('host')}`);
   const indexTpl = fs.readFileSync(path.join(pub, 'index.html'), 'utf8');
-  const sendIndex = (req, res) => {
-    // Adresse absolue du site pour l'aperçu WhatsApp (og:image)
-    const origin = `${req.protocol}://${req.get('host')}`;
-    res.type('html').send(indexTpl.replaceAll('__ORIGIN__', origin));
-  };
+  const porteTpl = fs.readFileSync(path.join(pub, 'invitation.html'), 'utf8');
+
+  // ---------- Accès invités (site privé) ----------
+  const invite = (req) => !guestCode || verifyInviteToken(req.cookies[INVITE_COOKIE], secret);
+  const poserCookie = (res) => res.cookie(INVITE_COOKIE, createInviteToken(secret), {
+    httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: INVITE_MAX_AGE_MS, path: '/',
+  });
+  const codeOk = (code) => guestCode && checkPassword(String(code ?? '').trim().toLowerCase(), guestCode.toLowerCase());
+
+  // Fichiers visibles sans code : la porte d'entrée, l'aperçu WhatsApp et l'espace admin
+  const LIBRES = new Set(['/invitation.css', '/invitation.js', '/logo.webp', '/apercu-whatsapp.jpg',
+    '/admin', '/admin.html', '/admin.css', '/admin.js', '/api/health', '/api/invite']);
+  app.use((req, res, next) => {
+    if (invite(req) || LIBRES.has(req.path) || req.path.startsWith('/api/admin')) return next();
+    // Lien d'invitation avec le code intégré : …/?code=XXXX
+    if (req.method === 'GET' && req.query.code !== undefined) {
+      if (inviteLimiter(req.ip) && codeOk(req.query.code)) {
+        poserCookie(res);
+        return res.redirect(302, req.path || '/');
+      }
+    }
+    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'INVITE_REQUIRED', message: 'Code d\'invitation requis.' });
+    if (req.method === 'GET' && (req.path === '/' || req.path === '/index.html')) {
+      return res.status(200).type('html').send(withOrigin(porteTpl, req));
+    }
+    return res.status(404).type('text').send('Introuvable.');
+  });
+
+  app.post('/api/invite', (req, res) => {
+    if (!guestCode) return res.json({ ok: true });
+    if (!inviteLimiter(req.ip)) return res.status(429).json({ error: 'TOO_MANY', message: 'Trop d\'essais. Réessayez dans 15 minutes.' });
+    if (!codeOk(req.body && req.body.code)) return res.status(401).json({ error: 'BAD_CODE', message: 'Ce code ne correspond pas. Vérifiez le message d\'invitation.' });
+    poserCookie(res);
+    res.json({ ok: true });
+  });
+
+  const sendIndex = (req, res) => res.type('html').send(withOrigin(indexTpl, req));
   app.get('/', sendIndex);
   app.get('/index.html', sendIndex);
   app.get('/admin', (req, res) => res.sendFile(path.join(pub, 'admin.html')));

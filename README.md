@@ -90,6 +90,7 @@ Service → onglet **Variables** :
 | `SESSION_SECRET` | chaîne aléatoire de 64 caractères |
 | `NODE_ENV` | `production` |
 | `DB_PATH` | `/data/mariage.db` |
+| `GUEST_CODE` | code d'accès des invités (4 caractères ou plus, majuscules ignorées). Sans lui, le site est public. |
 
 Railway fournit `PORT` automatiquement.
 
@@ -125,3 +126,8 @@ aussi être branché dans **Settings → Networking → Custom Domain**.
 Le site collecte noms, emails, téléphones, âges des enfants et allergies de vos invités. Elles ne servent qu'à
 l'organisation du mariage, sont visibles uniquement avec le mot de passe admin, et peuvent être supprimées
 une par une depuis `/admin`. Pensez à supprimer le projet Railway (ou à vider la base) une fois le mariage passé.
+
+## 7. Site privé (code invités)
+Avec la variable `GUEST_CODE`, le site n'est visible qu'après avoir saisi le code. L'aperçu WhatsApp (logo, titre) reste visible.
+- Lien direct sans saisie : `https://…/?code=VOTRECODE` (le code est retenu sur le téléphone de l'invité).
+- `/admin` garde son propre mot de passe.

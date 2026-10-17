@@ -1,0 +1,17 @@
+:root{--terracotta:#C0643E;--terracotta-d:#9E4E2E;--canard:#1F5C5B;--creme:#F5EDE0;--papier:#FBF7F0;--encre:#2B2420;--encre-2:#6B5E55;--ligne:#D9C6A9;--err:#B3261E;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:var(--creme);color:var(--encre);font:16px/1.5 'Jost',system-ui,sans-serif;display:grid;place-items:center;padding:24px 16px}
+.porte{width:100%;max-width:380px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.logo{width:min(220px,62vw);height:auto;border-radius:50%;filter:drop-shadow(0 6px 18px rgba(43,36,32,.12));margin-bottom:8px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--terracotta)}
+h1{font:600 clamp(24px,6.5vw,30px)/1.2 'Fraunces',Georgia,serif;color:var(--canard);text-wrap:balance}
+.aide{color:var(--encre-2)}
+form{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:8px}
+input{width:100%;font:500 18px 'Jost',sans-serif;text-align:center;letter-spacing:.06em;padding:14px;border:1.5px solid var(--ligne);border-radius:12px;background:#fff;color:var(--encre)}
+input:focus{outline:none;border-color:var(--canard);box-shadow:0 0 0 3px rgba(31,92,91,.12)}
+button{font:600 17px 'Jost',sans-serif;color:#fff;background:var(--terracotta);border:0;border-radius:99px;padding:14px;cursor:pointer}
+button:hover{background:var(--terracotta-d)}
+button:focus-visible{outline:3px solid var(--canard);outline-offset:3px}
+button:disabled{opacity:.6}
+.erreur{min-height:22px;color:var(--err);font-size:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}

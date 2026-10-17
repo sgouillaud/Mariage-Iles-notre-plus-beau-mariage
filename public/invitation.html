@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#1F5C5B">
+<title>Il.e.s · Cédric &amp; Sébastien</title>
+<meta name="description" content="Un voyage très spécial se prépare. Embarquez avec nous.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:url" content="__ORIGIN__/">
+<meta property="og:title" content="Il.e.s · Notre plus beau voyage">
+<meta property="og:description" content="Cédric &amp; Sébastien · 26 &amp; 27 juin 2027 · Répondez à notre invitation">
+<meta property="og:image" content="__ORIGIN__/apercu-whatsapp.jpg">
+<meta property="og:image:width" content="600">
+<meta property="og:image:height" content="600">
+<link rel="icon" href="/logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Jost:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/invitation.css">
+<script src="/invitation.js" defer></script>
+</head>
+<body>
+<main class="porte">
+  <img class="logo" src="/logo.webp" width="640" height="640" alt="Logo Il.e.s">
+  <p class="eyebrow">Vol IL 2627 · Embarquement réservé</p>
+  <h1>Votre carte d'embarquement, s'il vous plaît</h1>
+  <p class="aide">Entrez le code reçu avec votre invitation.</p>
+  <form id="porte-form" novalidate>
+    <label for="code" class="sr">Code d'embarquement</label>
+    <input id="code" name="code" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Code d'embarquement" required>
+    <button type="submit" id="porte-btn">Ouvrir l'invitation</button>
+    <p class="erreur" id="porte-err" role="alert"></p>
+  </form>
+</main>
+</body>
+</html>

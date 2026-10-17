@@ -138,3 +138,25 @@ test('Dress code : nuancier par défaut et couleurs vérifiées', async () => {
   const bad = [{ titre: 'Dress code', couleurs: [{ nom: 'Rouge', hex: 'red' }] }];
   assert.equal((await request(app).put('/api/admin/infos').set('Cookie', c).send({ infos: bad })).status, 400);
 });
+
+test('Site privé : code invité requis, lien avec code, aperçu WhatsApp et admin accessibles', async () => {
+  const db = openDb(':memory:');
+  const app = createApp({ db, adminPassword: PWD, sessionSecret: 'x'.repeat(40), env: 'test', guestCode: 'Iles2027' });
+  let r = await request(app).get('/').set('Host', 'iles.example.com');
+  assert.match(r.text, /Votre carte d'embarquement/);
+  assert.match(r.text, /og:image" content="http:\/\/iles\.example\.com\/apercu-whatsapp\.jpg"/);
+  assert.equal((await request(app).get('/api/infos')).status, 401);
+  assert.equal((await request(app).post('/api/rsvp').send(base)).status, 401);
+  assert.equal((await request(app).get('/site.js')).status, 404);
+  assert.equal((await request(app).get('/apercu-whatsapp.jpg')).status, 200);
+  assert.equal((await request(app).get('/admin')).status, 200);
+  assert.equal((await request(app).post('/api/invite').send({ code: 'faux' })).status, 401);
+  r = await request(app).post('/api/invite').send({ code: ' iles2027 ' });
+  assert.equal(r.status, 200);
+  const cookie = r.headers['set-cookie'];
+  assert.equal((await request(app).get('/api/infos').set('Cookie', cookie)).status, 200);
+  assert.match((await request(app).get('/').set('Cookie', cookie)).text, /Cédric <em>&amp;<\/em> Sébastien/);
+  r = await request(app).get('/?code=ILES2027');
+  assert.equal(r.status, 302);
+  assert.ok(r.headers['set-cookie'][0].startsWith('iles_invite='));
+});
