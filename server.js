@@ -5,6 +5,7 @@ const os = require('os');
 const crypto = require('crypto');
 const express = require('express');
 const QRCode = require('qrcode');
+const qrMariage = require('./src/qr');
 const cookieParser = require('cookie-parser');
 const { openDb, getInfos, setInfos } = require('./src/db');
 const { cleanRsvp, RsvpError } = require('./src/rsvp');
@@ -200,8 +201,7 @@ function createApp(options = {}) {
   // Petit QR code affiché dans le coin du diaporama
   app.get('/api/qr-photos.svg', async (req, res, next) => {
     try {
-      const svg = await QRCode.toString(lienPhotos(req), { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#1F5C5B', light: '#FFFFFF' } });
-      res.type('image/svg+xml').set('Cache-Control', 'private, max-age=3600').send(svg);
+      res.type('image/svg+xml').set('Cache-Control', 'private, max-age=3600').send(qrMariage.svg(lienPhotos(req)));
     } catch (e) { next(e); }
   });
 
@@ -322,14 +322,17 @@ function createApp(options = {}) {
   });
   admin.get('/qr-photos.:fmt', async (req, res, next) => {
     try {
-      const opts = { margin: 2, errorCorrectionLevel: 'H', color: { dark: req.query.blanc ? '#FFFFFF' : '#1F5C5B', light: req.query.blanc ? '#00000000' : '#FFFFFF' } };
+      // Par défaut : aux couleurs du mariage avec le logo ; ?blanc=1 : modules blancs sur fond transparent (plexi foncé)
       if (req.params.fmt === 'svg') {
-        res.type('image/svg+xml').set('Content-Disposition', 'attachment; filename="qr-photos-mariage.svg"');
-        return res.send(await QRCode.toString(lienPhotos(req), { ...opts, type: 'svg' }));
+        res.type('image/svg+xml').set('Content-Disposition', `attachment; filename="qr-photos-mariage${req.query.blanc ? '-blanc' : ''}.svg"`);
+        if (req.query.blanc) {
+          return res.send(await QRCode.toString(lienPhotos(req), { type: 'svg', margin: 2, errorCorrectionLevel: 'H', color: { dark: '#FFFFFF', light: '#00000000' } }));
+        }
+        return res.send(qrMariage.svg(lienPhotos(req)));
       }
       if (req.params.fmt === 'png') {
         res.type('image/png').set('Content-Disposition', 'attachment; filename="qr-photos-mariage.png"');
-        return res.send(await QRCode.toBuffer(lienPhotos(req), { ...opts, width: 2000 }));
+        return res.send(qrMariage.png(lienPhotos(req)));
       }
       res.status(404).json({ error: 'NOT_FOUND', message: 'Format inconnu.' });
     } catch (e) { next(e); }

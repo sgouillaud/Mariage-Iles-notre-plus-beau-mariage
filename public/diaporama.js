@@ -3,7 +3,33 @@
   const DUREE = 7000, SONDAGE = 6000;
   const scene = document.getElementById('scene');
   const attente = document.getElementById('attente');
-  const legende = document.getElementById('legende');
+  const legTxt = document.getElementById('leg-txt');
+  // Petits messages sous chaque photo ({n} = prénom de l'invité)
+  const AVEC = [
+    'Photo prise avec ❤️ par {n}',
+    'Un souvenir signé {n} ✨',
+    'Escale immortalisée par {n} 🌴',
+    'Vu à travers les yeux de {n} 👀',
+    '{n} a saisi l’instant 📸',
+    'Clic ! Merci {n} 🥂',
+    'Carte postale de {n} 💌',
+    'Dans l’objectif de {n} 🌺',
+    '{n} était là, et voilà la preuve 😄',
+    'Un instant volé par {n} 🕊️',
+  ];
+  const SANS = [
+    'Un souvenir anonyme, mais plein d’amour ❤️',
+    'Mystère… mais quelle belle photo ✨',
+    'Une escale de plus dans notre plus beau voyage 🌴',
+    'Merci au photographe inconnu 📸',
+  ];
+  let tour = Math.floor(Math.random() * AVEC.length);
+  const esc = (t) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function message(p) {
+    tour++;
+    if (!p.auteur) return esc(SANS[tour % SANS.length]);
+    return esc(AVEC[tour % AVEC.length]).replace('{n}', `<b>${esc(p.auteur)}</b>`);
+  }
   let photos = [], vues = new Set(), nouvelles = [], index = 0, premier = true, minuteur = null;
 
   async function sonder() {
@@ -49,7 +75,11 @@
     requestAnimationFrame(() => requestAnimationFrame(() => v.classList.add('on')));
     const anciennes = [...scene.children].slice(0, -1);
     setTimeout(() => anciennes.forEach((a) => a.remove()), 1400);
-    legende.textContent = p.auteur ? `📷 ${p.auteur}` : '';
+    legTxt.classList.remove('on');
+    setTimeout(() => {
+      legTxt.innerHTML = message(p);
+      requestAnimationFrame(() => legTxt.classList.add('on'));
+    }, 350);
   }
 
   // Curseur et bouton plein écran visibles seulement quand on bouge la souris
