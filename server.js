@@ -2,7 +2,9 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const crypto = require('crypto');
 const express = require('express');
+const QRCode = require('qrcode');
 const cookieParser = require('cookie-parser');
 const { openDb, getInfos, setInfos } = require('./src/db');
 const { cleanRsvp, RsvpError } = require('./src/rsvp');
@@ -54,7 +56,7 @@ function createApp(options = {}) {
       'Referrer-Policy': 'same-origin',
       'X-Robots-Tag': 'noindex, nofollow',
       'Content-Security-Policy':
-        "default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; " +
+        "default-src 'self'; img-src 'self' data: blob:; style-src 'self' https://fonts.googleapis.com; " +
         "font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; media-src 'self'; frame-ancestors 'none'",
     });
     next();
@@ -80,6 +82,8 @@ function createApp(options = {}) {
     // La chanson n'est servie que si le site est protégé par un code
     if (!guestCode && req.path.startsWith('/sons/chanson')) return res.status(404).type('text').send('Introuvable.');
     if (invite(req) || LIBRES.has(req.path) || req.path.startsWith('/api/admin')) return next();
+    // Les mariés voient les photos depuis /admin sans code invité
+    if (req.path.startsWith('/photos/f/') && verifyToken(req.cookies[COOKIE], secret)) return next();
     // Lien d'invitation avec le code intégré : …/?code=XXXX
     if (req.method === 'GET' && req.query.code !== undefined) {
       if (inviteLimiter(req.ip) && codeOk(req.query.code)) {
@@ -106,6 +110,8 @@ function createApp(options = {}) {
   app.get('/', sendIndex);
   app.get('/index.html', sendIndex);
   app.get('/admin', (req, res) => res.sendFile(path.join(pub, 'admin.html')));
+  app.get('/photos', (req, res) => res.sendFile(path.join(pub, 'photos.html')));
+  app.get('/diaporama', (req, res) => res.sendFile(path.join(pub, 'diaporama.html')));
   app.use(express.static(pub, { index: false, maxAge: isProd ? '1h' : 0 }));
 
   // ---------- API publique ----------
@@ -133,6 +139,54 @@ function createApp(options = {}) {
       const existed = db.prepare('SELECT 1 FROM rsvps WHERE cle = ?').get(r.cle);
       upsert.run({ ...r, enfants: JSON.stringify(r.enfants) });
       res.json({ ok: true, updated: !!existed });
+    } catch (e) { next(e); }
+  });
+
+  // ---------- Photos des invités (QR code → envoi, diaporama en direct) ----------
+  const photosDir = options.photosDir ?? process.env.PHOTOS_DIR ??
+    path.join(path.dirname(process.env.DB_PATH || path.join(__dirname, 'data', 'mariage.db')), 'photos');
+  fs.mkdirSync(photosDir, { recursive: true });
+  const photoLimiter = rateLimiter({ windowMs: 10 * 60 * 1000, max: options.photoRateMax ?? 80 });
+  const MAX_PHOTO = 12 * 1024 * 1024;
+  const photoOut = (p) => ({ id: p.id, auteur: p.auteur, url: `/photos/f/${p.fichier}`, le: p.created_at });
+  const lienPhotos = (req) => `${req.protocol}://${req.get('host')}/photos${guestCode ? '?code=' + encodeURIComponent(guestCode) : ''}`;
+
+  app.post('/api/photos', express.raw({ type: ['image/jpeg', 'image/png', 'image/webp'], limit: MAX_PHOTO }), (req, res) => {
+    if (!photoLimiter(req.ip)) return res.status(429).json({ error: 'TOO_MANY', message: 'Beaucoup de photos d’un coup ! Réessayez dans quelques minutes.' });
+    const buf = req.body;
+    if (!Buffer.isBuffer(buf) || buf.length < 100) return res.status(400).json({ error: 'BAD_PHOTO', message: 'Photo illisible.' });
+    const ext = buf[0] === 0xff && buf[1] === 0xd8 ? 'jpg'
+      : buf.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) ? 'png'
+      : buf.slice(0, 4).toString() === 'RIFF' && buf.slice(8, 12).toString() === 'WEBP' ? 'webp' : null;
+    if (!ext) return res.status(400).json({ error: 'BAD_PHOTO', message: 'Format non reconnu (JPEG, PNG ou WebP).' });
+    let auteur = '';
+    try { auteur = decodeURIComponent(String(req.get('X-Auteur') || '')); } catch { /* ignore */ }
+    auteur = auteur.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 60);
+    const fichier = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${ext}`;
+    fs.writeFileSync(path.join(photosDir, fichier), buf);
+    const info = db.prepare('INSERT INTO photos (fichier, auteur, taille) VALUES (?, ?, ?)').run(fichier, auteur, buf.length);
+    res.json({ ok: true, id: info.lastInsertRowid });
+  });
+
+  app.get('/api/photos', (req, res) => {
+    const rows = db.prepare('SELECT * FROM photos WHERE masquee = 0 ORDER BY id DESC LIMIT 500').all();
+    res.json({ photos: rows.map(photoOut) });
+  });
+
+  app.get('/photos/f/:fichier', (req, res) => {
+    const f = String(req.params.fichier);
+    if (!/^[0-9]+-[0-9a-f]{12}\.(jpg|png|webp)$/.test(f)) return res.status(404).type('text').send('Introuvable.');
+    const p = db.prepare('SELECT masquee FROM photos WHERE fichier = ?').get(f);
+    if (!p || (p.masquee && !verifyToken(req.cookies[COOKIE], secret))) return res.status(404).type('text').send('Introuvable.');
+    res.set('Cache-Control', 'private, max-age=86400');
+    res.sendFile(path.join(photosDir, f));
+  });
+
+  // Petit QR code affiché dans le coin du diaporama
+  app.get('/api/qr-photos.svg', async (req, res, next) => {
+    try {
+      const svg = await QRCode.toString(lienPhotos(req), { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#1F5C5B', light: '#FFFFFF' } });
+      res.type('image/svg+xml').set('Cache-Control', 'private, max-age=3600').send(svg);
     } catch (e) { next(e); }
   });
 
@@ -231,6 +285,38 @@ function createApp(options = {}) {
     } catch (e) { fs.rm(tmp, { force: true }, () => {}); next(e); }
   });
 
+  // Photos : modération et QR code à imprimer (le code invité y est intégré)
+  admin.get('/photos', (req, res) => {
+    const rows = db.prepare('SELECT * FROM photos ORDER BY id DESC').all();
+    res.json({ photos: rows.map((p) => ({ ...photoOut(p), masquee: !!p.masquee, taille: p.taille })), lien: lienPhotos(req) });
+  });
+  admin.post('/photos/:id/masquer', (req, res) => {
+    const masquee = req.body && req.body.masquee ? 1 : 0;
+    const info = db.prepare('UPDATE photos SET masquee = ? WHERE id = ?').run(masquee, Number(req.params.id));
+    res.json({ ok: info.changes > 0 });
+  });
+  admin.delete('/photos/:id', (req, res) => {
+    const p = db.prepare('SELECT fichier FROM photos WHERE id = ?').get(Number(req.params.id));
+    if (!p) return res.json({ ok: false });
+    db.prepare('DELETE FROM photos WHERE id = ?').run(Number(req.params.id));
+    fs.rm(path.join(photosDir, p.fichier), { force: true }, () => {});
+    res.json({ ok: true });
+  });
+  admin.get('/qr-photos.:fmt', async (req, res, next) => {
+    try {
+      const opts = { margin: 2, errorCorrectionLevel: 'H', color: { dark: req.query.blanc ? '#FFFFFF' : '#1F5C5B', light: req.query.blanc ? '#00000000' : '#FFFFFF' } };
+      if (req.params.fmt === 'svg') {
+        res.type('image/svg+xml').set('Content-Disposition', 'attachment; filename="qr-photos-mariage.svg"');
+        return res.send(await QRCode.toString(lienPhotos(req), { ...opts, type: 'svg' }));
+      }
+      if (req.params.fmt === 'png') {
+        res.type('image/png').set('Content-Disposition', 'attachment; filename="qr-photos-mariage.png"');
+        return res.send(await QRCode.toBuffer(lienPhotos(req), { ...opts, width: 2000 }));
+      }
+      res.status(404).json({ error: 'NOT_FOUND', message: 'Format inconnu.' });
+    } catch (e) { next(e); }
+  });
+
   app.use('/api/admin', admin);
 
   // ---------- Erreurs ----------
@@ -238,6 +324,7 @@ function createApp(options = {}) {
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     if (err instanceof RsvpError) return res.status(400).json({ error: err.code, message: err.message });
+    if (err && err.type === 'entity.too.large') return res.status(413).json({ error: 'TOO_BIG', message: 'Photo trop lourde (12 Mo maximum).' });
     if (err && err.type === 'entity.parse.failed') return res.status(400).json({ error: 'BAD_JSON', message: 'Requête invalide.' });
     console.error(err);
     res.status(500).json({ error: 'SERVER', message: 'Erreur du serveur.' });

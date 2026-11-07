@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<title>Il.e.s · Diaporama</title>
+<link rel="icon" href="/logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/photos.css">
+</head>
+<body class="page-diapo">
+<div id="scene" class="scene"></div>
+<div id="attente" class="attente">
+  <img src="/logo.webp" alt="" width="220" height="220">
+  <p>Scannez le QR code et partagez vos photos&nbsp;: elles apparaîtront ici.</p>
+</div>
+<div class="legende" id="legende"></div>
+<aside class="coin-qr">
+  <img src="/api/qr-photos.svg" alt="QR code pour envoyer vos photos" width="150" height="150">
+  <span>Vos photos ici&nbsp;!</span>
+</aside>
+<button id="plein" class="plein" type="button">Plein écran</button>
+<script src="/diaporama.js" defer></script>
+</body>
+</html>

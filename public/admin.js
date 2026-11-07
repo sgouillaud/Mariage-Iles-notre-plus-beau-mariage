@@ -33,6 +33,7 @@
     $$('.tab').forEach((t) => t.classList.toggle('cache', t.id !== 'tab-' + b.dataset.tab));
     if (b.dataset.tab === 'infos') chargerInfos();
     if (b.dataset.tab === 'reponses') charger();
+    if (b.dataset.tab === 'photos') chargerPhotos();
   }));
 
   // ---------- Réponses ----------
@@ -219,4 +220,33 @@
 
   // ---------- Démarrage ----------
   fetch('/api/admin/me').then((r) => (r.ok ? montrerApp() : montrerLogin())).catch(montrerLogin);
+
+  // ---------- Photos ----------
+  async function chargerPhotos() {
+    try {
+      const d = await api('/api/admin/photos');
+      $('#qr-lien').textContent = d.lien;
+      const visibles = d.photos.filter((p) => !p.masquee).length;
+      const mo = d.photos.reduce((s, p) => s + p.taille, 0) / 1048576;
+      $('#photos-resume').textContent = d.photos.length
+        ? `${d.photos.length} photo${d.photos.length > 1 ? 's' : ''} reçue${d.photos.length > 1 ? 's' : ''} (${visibles} au diaporama, ${mo.toFixed(1)} Mo). « Masquer » la retire du diaporama sans la supprimer.`
+        : 'Aucune photo reçue pour l’instant.';
+      $('#photos-grille').innerHTML = d.photos.map((p) => `
+        <figure class="ph ${p.masquee ? 'masquee' : ''}">
+          <a href="${p.url}" target="_blank" rel="noopener"><img src="${p.url}" alt="" loading="lazy"></a>
+          <figcaption>${esc(p.auteur || 'Anonyme')}<small>${esc(p.le)}</small></figcaption>
+          <div class="ph-actions">
+            <button class="lien-s" data-masquer="${p.id}" data-etat="${p.masquee ? 0 : 1}">${p.masquee ? 'Remettre' : 'Masquer'}</button>
+            <a class="lien-s" href="${p.url}" download>Télécharger</a>
+            <button class="lien-s rouge" data-suppr="${p.id}">Supprimer</button>
+          </div>
+        </figure>`).join('');
+    } catch (e) { /* login affiché */ }
+  }
+  document.addEventListener('click', async (e) => {
+    const m = e.target.closest('[data-masquer]');
+    const s = e.target.closest('[data-suppr]');
+    if (m) { await api(`/api/admin/photos/${m.dataset.masquer}/masquer`, { method: 'POST', body: JSON.stringify({ masquee: m.dataset.etat === '1' }) }); chargerPhotos(); }
+    if (s && confirm('Supprimer définitivement cette photo ?')) { await api(`/api/admin/photos/${s.dataset.suppr}`, { method: 'DELETE' }); chargerPhotos(); }
+  });
 })();

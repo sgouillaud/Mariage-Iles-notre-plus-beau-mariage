@@ -56,6 +56,13 @@ mariage-iles/
 - Exports CSV pour Excel : toutes les réponses, ou la liste des enfants (pour le traiteur).
 - Sauvegarde complète de la base (.db).
 
+**Photos des invités (QR code)**
+- `/photos` : les invités envoient leurs photos depuis leur téléphone (compressées automatiquement, plusieurs d'un coup).
+- `/diaporama` : à ouvrir sur l'ordinateur relié à l'écran ou au vidéoprojecteur (bouton « Plein écran ») ;
+  les nouvelles photos passent en priorité, avec le prénom de l'auteur et un QR code dans le coin.
+- `/admin` → onglet **Photos** : QR code à imprimer (code invité intégré), masquer / supprimer / télécharger les photos.
+- Les photos sont stockées sur le volume, dans `/data/photos` (elles ne sont pas dans la sauvegarde .db).
+
 ## 3. Essai en local (facultatif)
 
 ```bash

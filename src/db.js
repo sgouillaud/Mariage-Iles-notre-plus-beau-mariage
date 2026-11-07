@@ -32,6 +32,14 @@ function openDb(file) {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+    CREATE TABLE IF NOT EXISTS photos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      fichier TEXT NOT NULL UNIQUE,          -- nom du fichier dans le dossier des photos
+      auteur TEXT NOT NULL DEFAULT '',
+      masquee INTEGER NOT NULL DEFAULT 0,    -- 1 = retirée du diaporama par les mariés
+      taille INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL

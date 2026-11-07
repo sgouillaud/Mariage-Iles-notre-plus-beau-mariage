@@ -6,9 +6,13 @@ const { createApp } = require('../server');
 const { openDb } = require('../src/db');
 
 const PWD = 'mot-de-passe-de-test';
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
+const tmpPhotos = () => fs.mkdtempSync(path.join(os.tmpdir(), 'photos-test-'));
 function setup() {
   const db = openDb(':memory:');
-  const app = createApp({ db, adminPassword: PWD, sessionSecret: 'x'.repeat(40), env: 'test' });
+  const app = createApp({ db, adminPassword: PWD, sessionSecret: 'x'.repeat(40), env: 'test', photosDir: tmpPhotos() });
   return { app, db };
 }
 async function login(app) {
@@ -171,4 +175,49 @@ test('Chanson : jamais servie sans code invité, servie aux invités connectés'
   const r = await request(prive).get('/sons/chanson.mp3').set('Cookie', c);
   assert.equal(r.status, 200);
   assert.match(r.headers['content-type'], /audio\/mpeg/);
+});
+
+const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(300, 1)]);
+
+test('Photos : envoi, liste, diaporama, modération et QR code', async () => {
+  const db = openDb(':memory:');
+  const dir = tmpPhotos();
+  const app = createApp({ db, adminPassword: PWD, sessionSecret: 'x'.repeat(40), env: 'test', guestCode: 'Iles2027', photosDir: dir });
+  // Sans code invité : rien n'est accessible
+  assert.equal((await request(app).post('/api/photos').set('Content-Type', 'image/jpeg').send(JPEG)).status, 401);
+  assert.equal((await request(app).get('/photos')).status, 404);
+  // Le lien du QR code ouvre la page photos avec le code
+  let r = await request(app).get('/photos?code=Iles2027');
+  assert.equal(r.status, 302); assert.equal(r.headers.location, '/photos');
+  const c = r.headers['set-cookie'];
+  assert.equal((await request(app).get('/photos').set('Cookie', c)).status, 200);
+  assert.equal((await request(app).get('/diaporama').set('Cookie', c)).status, 200);
+  // Fichier qui n'est pas une image : refusé
+  assert.equal((await request(app).post('/api/photos').set('Cookie', c).set('Content-Type', 'image/jpeg').send(Buffer.alloc(300, 7))).status, 400);
+  r = await request(app).post('/api/photos').set('Cookie', c).set('Content-Type', 'image/jpeg')
+    .set('X-Auteur', encodeURIComponent('Léa <b>')).send(JPEG);
+  assert.equal(r.status, 200);
+  r = await request(app).get('/api/photos').set('Cookie', c);
+  assert.equal(r.body.photos.length, 1);
+  assert.equal(r.body.photos[0].auteur, 'Léa b');
+  const url = r.body.photos[0].url;
+  assert.equal((await request(app).get(url).set('Cookie', c)).status, 200);
+  assert.equal((await request(app).get(url)).status, 404);
+  const qr = await request(app).get('/api/qr-photos.svg').set('Cookie', c);
+  assert.equal(qr.status, 200); assert.match(qr.headers['content-type'], /image\/svg\+xml/);
+  // Admin : QR à imprimer avec le code intégré, masquer puis supprimer
+  const a = await login(app);
+  const ad = await request(app).get('/api/admin/photos').set('Cookie', a);
+  assert.match(ad.body.lien, /\/photos\?code=Iles2027$/);
+  const png = await request(app).get('/api/admin/qr-photos.png').set('Cookie', a);
+  assert.equal(png.status, 200); assert.match(png.headers['content-type'], /image\/png/);
+  const id = ad.body.photos[0].id;
+  await request(app).post(`/api/admin/photos/${id}/masquer`).set('Cookie', a).send({ masquee: true });
+  assert.equal((await request(app).get('/api/photos').set('Cookie', c)).body.photos.length, 0);
+  assert.equal((await request(app).get(url).set('Cookie', c)).status, 404);
+  assert.equal((await request(app).get(url).set('Cookie', a)).status, 200);
+  await request(app).delete(`/api/admin/photos/${id}`).set('Cookie', a);
+  assert.equal((await request(app).get('/api/admin/photos').set('Cookie', a)).body.photos.length, 0);
+  await new Promise((ok) => setTimeout(ok, 50));
+  assert.equal(fs.readdirSync(dir).length, 0);
 });

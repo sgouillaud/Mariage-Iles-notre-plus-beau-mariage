@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex">
+<title>Il.e.s · Vos photos</title>
+<link rel="icon" href="/logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/photos.css">
+</head>
+<body class="page-photos">
+<header class="ph-head">
+  <img src="/logo.webp" alt="" width="84" height="84">
+  <p class="eyebrow">Carnet de voyage</p>
+  <h1>Partagez vos photos</h1>
+  <p class="sous">Elles s'affichent en direct sur le diaporama de la soirée.</p>
+</header>
+
+<main class="ph-wrap">
+  <form id="envoi" class="carte">
+    <label class="f" for="auteur">Votre prénom</label>
+    <input id="auteur" maxlength="60" autocomplete="given-name" placeholder="Pour savoir qui a pris la photo">
+    <input id="fichiers" type="file" accept="image/*" multiple class="cache-input">
+    <label for="fichiers" class="btn btn-primary gros">📷 Choisir ou prendre des photos</label>
+    <div id="file" class="file" aria-live="polite"></div>
+    <p class="aide">Vous pouvez en choisir plusieurs d'un coup. Elles sont envoyées une par une, gardez la page ouverte jusqu'à la fin.</p>
+  </form>
+
+  <section class="dernieres">
+    <h2>Les dernières escales</h2>
+    <div id="grille" class="grille"></div>
+    <p id="vide" class="aide">Aucune photo pour l'instant : soyez le premier !</p>
+  </section>
+  <p class="retour"><a href="/">← Retour au site</a></p>
+</main>
+<script src="/photos.js" defer></script>
+</body>
+</html>

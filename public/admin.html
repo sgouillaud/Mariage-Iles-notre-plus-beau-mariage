@@ -38,6 +38,7 @@
     <nav class="wrap onglets" role="tablist">
       <button class="onglet actif" data-tab="reponses" role="tab">Réponses</button>
       <button class="onglet" data-tab="infos" role="tab">Infos pratiques</button>
+      <button class="onglet" data-tab="photos" role="tab">Photos</button>
       <button class="onglet" data-tab="exports" role="tab">Exports</button>
     </nav>
   </header>
@@ -69,6 +70,31 @@
         <button class="btn" id="info-save">Enregistrer</button>
       </div>
       <p class="ok" id="info-msg"></p>
+    </section>
+
+    <!-- PHOTOS -->
+    <section id="tab-photos" class="tab cache">
+      <div class="carte bloc">
+        <h2>QR code des photos</h2>
+        <p>Les invités scannent ce QR code, envoient leurs photos, et elles s'affichent en direct sur le diaporama. Le code d'accès invités est déjà intégré : pas besoin de le saisir.</p>
+        <div class="qr-zone">
+          <img id="qr-apercu" src="/api/admin/qr-photos.svg" alt="QR code des photos" width="180" height="180">
+          <div>
+            <p class="petit">Lien du QR code :<br><code id="qr-lien"></code></p>
+            <div class="actions">
+              <a class="btn" href="/api/admin/qr-photos.png">QR code pour l'imprimeur (.png)</a>
+              <a class="btn ghost" href="/api/admin/qr-photos.svg">Version vectorielle (.svg)</a>
+              <a class="btn ghost" href="/api/admin/qr-photos.svg?blanc=1">SVG blanc (plexi foncé)</a>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <a class="btn ghost" href="/photos" target="_blank" rel="noopener">Ouvrir la page d'envoi ↗</a>
+          <a class="btn ghost" href="/diaporama" target="_blank" rel="noopener">Ouvrir le diaporama ↗</a>
+        </div>
+      </div>
+      <p class="intro" id="photos-resume"></p>
+      <div id="photos-grille" class="photos-grille"></div>
     </section>
 
     <!-- EXPORTS -->
