@@ -121,3 +121,6 @@ main{padding:22px 0 60px}
 .lien-s{background:none;border:0;font:500 13px var(--sans);color:var(--canard);text-decoration:underline;cursor:pointer;padding:0}
 .lien-s.rouge{color:var(--err)}
 .ouverture{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.alerte{background:#FBE3DF;border:2px solid #B3261E;color:#7A1A14;border-radius:14px;padding:14px 18px;margin:0 0 18px;font-size:15px;line-height:1.5}
+.alerte[hidden]{display:none}
+.cache-fichier{position:absolute;width:1px;height:1px;opacity:0}

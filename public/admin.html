@@ -45,6 +45,7 @@
 
   <main class="wrap">
     <!-- RÉPONSES -->
+    <div id="alerte-stockage" class="alerte" hidden></div>
     <section id="tab-reponses" class="tab">
       <div class="stats" id="stats"></div>
       <div class="moments" id="moments"></div>
@@ -115,6 +116,15 @@
           <a class="btn" href="/api/admin/export.csv">Toutes les réponses (.csv)</a>
           <a class="btn ghost" href="/api/admin/export-enfants.csv">Liste des enfants (.csv)</a>
         </div>
+      </div>
+      <div class="carte bloc">
+        <h2>Restaurer des réponses</h2>
+        <p>Réimporte un fichier « Toutes les réponses (.csv) » téléchargé plus tôt. Les réponses déjà présentes ne sont pas touchées : seules les manquantes sont ajoutées.</p>
+        <div class="actions">
+          <input type="file" id="import-fichier" accept=".csv,text/csv" class="cache-fichier">
+          <label for="import-fichier" class="btn ghost">Choisir le fichier .csv…</label>
+        </div>
+        <p class="petit" id="import-res"></p>
       </div>
       <div class="carte bloc">
         <h2>Sauvegarde</h2>

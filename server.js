@@ -7,12 +7,28 @@ const express = require('express');
 const QRCode = require('qrcode');
 const qrMariage = require('./src/qr');
 const cookieParser = require('cookie-parser');
-const { openDb, getInfos, setInfos } = require('./src/db');
+const { openDb, getInfos, setInfos, cheminBase, stockage } = require('./src/db');
 const { cleanRsvp, RsvpError } = require('./src/rsvp');
 const { cleanInfos } = require('./src/infos');
 const { COOKIE, MAX_AGE_MS, checkPassword, createToken, verifyToken, rateLimiter } = require('./src/auth');
 const { envoyerZip } = require('./src/zip');
 const { INVITE_COOKIE, INVITE_MAX_AGE_MS, createInviteToken, verifyInviteToken } = require('./src/invite');
+
+// Lecture d'un CSV « ; » (guillemets, retours à la ligne dans les cellules)
+function lireCsv(txt) {
+  const lignes = []; let l = [], c = '', q = false;
+  for (let i = 0; i < txt.length; i++) {
+    const ch = txt[i];
+    if (q) {
+      if (ch === '"' && txt[i + 1] === '"') { c += '"'; i++; } else if (ch === '"') q = false; else c += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ';') { l.push(c); c = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && txt[i + 1] === '\n') i++; l.push(c); lignes.push(l); l = []; c = ''; }
+    else c += ch;
+  }
+  if (c || l.length) { l.push(c); lignes.push(l); }
+  return lignes;
+}
 
 function csvCell(v) {
   const s = String(v ?? '');
@@ -154,7 +170,7 @@ function createApp(options = {}) {
 
   // ---------- Photos des invités (QR code → envoi, diaporama en direct) ----------
   const photosDir = options.photosDir ?? process.env.PHOTOS_DIR ??
-    path.join(path.dirname(process.env.DB_PATH || path.join(__dirname, 'data', 'mariage.db')), 'photos');
+    path.join(path.dirname(cheminBase()), 'photos');
   fs.mkdirSync(photosDir, { recursive: true });
   const photoLimiter = rateLimiter({ windowMs: 10 * 60 * 1000, max: options.photoRateMax ?? 80 });
   const MAX_PHOTO = 12 * 1024 * 1024;
@@ -259,7 +275,7 @@ function createApp(options = {}) {
         m, rows.filter((r) => r.presence === 'Oui' && r.moments.split(', ').includes(m)).reduce((s, r) => s + r.nb_personnes, 0),
       ])),
     };
-    res.json({ rsvps: rows, stats });
+    res.json({ rsvps: rows, stats, stockage: options.env === 'test' ? { surVolume: null } : stockage() });
   });
 
   admin.delete('/rsvps/:id', (req, res) => {
@@ -280,6 +296,46 @@ function createApp(options = {}) {
     res.set('Content-Type', 'text/csv; charset=utf-8');
     res.set('Content-Disposition', 'attachment; filename="reponses-mariage.csv"');
     res.send('﻿' + lines.join('\n'));
+  });
+
+  // Restauration : réimporte un export « Toutes les réponses (.csv) ». Les réponses déjà présentes sont gardées telles quelles.
+  admin.post('/import.csv', express.text({ type: '*/*', limit: '5mb' }), (req, res) => {
+    const lignes = lireCsv(String(req.body || '').replace(/^\ufeff/, ''));
+    const tete = lignes.shift() || [];
+    const col = (n) => tete.indexOf(n);
+    const C = { prenom: col('Prénom'), nom: col('Nom'), email: col('Email'), tel: col('Téléphone'), presence: col('Présence'),
+      moments: col('Moments'), heb: col('Hébergement'), acc: col('Accompagnant(e)'), enfants: col('Enfants'),
+      allergies: col('Allergies / régime'), message: col('Message'), nb: col('Nb personnes'), cree: col('Répondu le'), modif: col('Modifié le') };
+    if (C.prenom < 0 || C.email < 0 || C.presence < 0) {
+      return res.status(400).json({ error: 'BAD_CSV', message: 'Ce fichier n’est pas un export « Toutes les réponses » du site.' });
+    }
+    const ins = db.prepare(`INSERT OR IGNORE INTO rsvps (cle, prenom, nom, email, telephone, presence, moments, hebergement,
+      accompagnant, enfants, allergies, message, nb_personnes, created_at, updated_at)
+      VALUES (@cle, @prenom, @nom, @email, @telephone, @presence, @moments, @hebergement, @accompagnant, @enfants,
+      @allergies, @message, @nb_personnes, @created_at, @updated_at)`);
+    const v = (l, i) => (i >= 0 && l[i] != null ? String(l[i]).trim() : '');
+    let ajoutees = 0, deja = 0;
+    db.transaction(() => {
+      for (const l of lignes) {
+        if (l.length < 5 || !v(l, C.prenom) || !v(l, C.email)) continue;
+        const enfants = v(l, C.enfants).split(/,\s*(?=[^,]*\(\d+ ans\))/).map((t) => t.trim()).filter(Boolean).map((t) => {
+          const m = t.match(/^(.*?)\s*\((\d+) ans\)$/);
+          const noms = (m ? m[1] : t).split(/\s+/);
+          return { prenom: noms.shift() || '', nom: noms.join(' '), age: m ? Number(m[2]) : 0 };
+        });
+        const email = v(l, C.email).toLowerCase(), prenom = v(l, C.prenom);
+        const date = (x) => (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(x) ? x : null);
+        const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const info = ins.run({
+          cle: `${email}|${prenom.toLowerCase()}`, prenom, nom: v(l, C.nom), email, telephone: v(l, C.tel),
+          presence: v(l, C.presence), moments: v(l, C.moments), hebergement: v(l, C.heb), accompagnant: v(l, C.acc),
+          enfants: JSON.stringify(enfants), allergies: v(l, C.allergies), message: v(l, C.message),
+          nb_personnes: Number(v(l, C.nb)) || 0, created_at: date(v(l, C.cree)) || now, updated_at: date(v(l, C.modif)) || now,
+        });
+        if (info.changes) ajoutees++; else deja++;
+      }
+    })();
+    res.json({ ok: true, ajoutees, deja });
   });
 
   admin.get('/export-enfants.csv', (req, res) => {
@@ -384,6 +440,9 @@ if (require.main === module) {
   const db = openDb();
   const app = createApp({ db });
   const port = Number(process.env.PORT) || 3000;
+  const st = stockage();
+  console.log(`Base de données : ${st.fichier}`);
+  if (st.surVolume === false) console.error(`ATTENTION : les réponses seront perdues au prochain déploiement. ${st.raison}`);
   const server = app.listen(port, () => console.log(`Site Il.e.s démarré sur le port ${port}`));
   const stop = () => server.close(() => { db.close(); process.exit(0); });
   process.on('SIGTERM', stop);

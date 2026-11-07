@@ -237,3 +237,22 @@ test('Photos : envoi, liste, diaporama, modération et QR code', async () => {
   await new Promise((ok) => setTimeout(ok, 50));
   assert.equal(fs.readdirSync(dir).length, 0);
 });
+
+test('Restauration : réimport d’un export CSV, sans doublon', async () => {
+  const { app } = setup();
+  await request(app).post('/api/rsvp').send(base);
+  const c = await login(app);
+  const csv = (await request(app).get('/api/admin/export.csv').set('Cookie', c)).text
+    + '\nPaul;Durand;paul@test.fr;0611223344;Oui;Dîner;Logé sur place;;2;Zoé Durand Petit (8 ans), Max Durand (3 ans);"Sans gluten; merci";"Bonne\nfête";3;2026-10-20 10:00:00;2026-10-21 11:00:00';
+  let r = await request(app).post('/api/admin/import.csv').set('Cookie', c).set('Content-Type', 'text/csv').send(csv);
+  assert.deepEqual(r.body, { ok: true, ajoutees: 1, deja: 1 });
+  const rows = (await request(app).get('/api/admin/rsvps').set('Cookie', c)).body.rsvps;
+  const paul = rows.find((x) => x.prenom === 'Paul');
+  assert.deepEqual(paul.enfants, [{ prenom: 'Zoé', nom: 'Durand Petit', age: 8 }, { prenom: 'Max', nom: 'Durand', age: 3 }]);
+  assert.equal(paul.allergies, 'Sans gluten; merci');
+  assert.equal(paul.message, 'Bonne\nfête');
+  assert.equal(paul.created_at, '2026-10-20 10:00:00');
+  r = await request(app).post('/api/admin/import.csv').set('Cookie', c).set('Content-Type', 'text/csv').send('a;b\n1;2');
+  assert.equal(r.status, 400);
+  assert.equal((await request(app).post('/api/admin/import.csv').set('Content-Type', 'text/csv').send(csv)).status, 401);
+});

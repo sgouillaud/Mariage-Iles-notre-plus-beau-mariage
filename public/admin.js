@@ -43,6 +43,9 @@
   async function charger() {
     try {
       const d = await api('/api/admin/rsvps');
+      const st = d.stockage || {};
+      $('#alerte-stockage').hidden = st.surVolume !== false;
+      if (st.surVolume === false) $('#alerte-stockage').innerHTML = '<b>⚠ Les réponses ne sont pas enregistrées sur le volume Railway</b> : elles seront effacées au prochain déploiement. ' + esc(st.raison || '') + ' Dans Railway : rattachez un volume monté sur <code>/data</code> et mettez la variable <code>DB_PATH</code> = <code>/data/mariage.db</code>.';
       donnees = d.rsvps;
       const s = d.stats;
       $('#stats').innerHTML = [
@@ -259,5 +262,19 @@
     const s = e.target.closest('[data-suppr]');
     if (m) { await api(`/api/admin/photos/${m.dataset.masquer}/masquer`, { method: 'POST', body: JSON.stringify({ masquee: m.dataset.etat === '1' }) }); chargerPhotos(); }
     if (s && confirm('Supprimer définitivement cette photo ?')) { await api(`/api/admin/photos/${s.dataset.suppr}`, { method: 'DELETE' }); chargerPhotos(); }
+  });
+
+  // ---------- Restauration CSV ----------
+  $('#import-fichier').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    $('#import-res').textContent = 'Import en cours…';
+    try {
+      const r = await fetch('/api/admin/import.csv', { method: 'POST', headers: { 'Content-Type': 'text/csv' }, body: await f.text() });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.message || 'Erreur');
+      $('#import-res').textContent = `${d.ajoutees} réponse${d.ajoutees > 1 ? 's' : ''} restaurée${d.ajoutees > 1 ? 's' : ''}` + (d.deja ? `, ${d.deja} déjà présente${d.deja > 1 ? 's' : ''}.` : '.');
+      charger();
+    } catch (err) { $('#import-res').textContent = '⚠ ' + err.message; }
   });
 })();

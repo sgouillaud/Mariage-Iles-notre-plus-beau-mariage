@@ -116,6 +116,8 @@ aussi être branché dans **Settings → Networking → Custom Domain**.
    en mémoire, ajoutez `?v=2` à la fin du lien.
 
 ### Important
+- Si `DB_PATH` n'est pas renseignée, la base va automatiquement dans le volume Railway. `/admin` affiche une alerte rouge si la base n'est pas sur le volume (elle serait effacée à chaque déploiement).
+- `/admin` → Exports → **Restaurer des réponses** : réimporte un export « Toutes les réponses (.csv) ».
 - Gardez **une seule instance** (1 replica) : la base est un fichier sur le volume.
 - Chaque modification poussée sur GitHub redéploie automatiquement le site. Les réponses et les infos pratiques,
   elles, sont dans la base et ne bougent pas.

@@ -6,8 +6,28 @@ const Database = require('better-sqlite3');
 // Infos pratiques affichées sur le site, modifiables depuis /admin (valeurs de départ)
 const DEFAULT_INFOS = require('./infos-par-defaut.json');
 
+// Emplacement de la base : DB_PATH, sinon le volume Railway s'il existe, sinon ./data (essais en local).
+// Sur Railway, seul le volume survit aux redéploiements : une base ailleurs est effacée à chaque mise à jour.
+function cheminBase() {
+  if (process.env.DB_PATH) return process.env.DB_PATH;
+  if (process.env.RAILWAY_VOLUME_MOUNT_PATH) return path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'mariage.db');
+  return path.join(__dirname, '..', 'data', 'mariage.db');
+}
+
+// La base est-elle bien sur le volume ? (null = impossible à savoir, ex. en local)
+function stockage() {
+  const fichier = path.resolve(cheminBase());
+  const volume = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+  const surRailway = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID || process.env.RAILWAY_SERVICE_ID);
+  if (!surRailway) return { fichier, surVolume: null };
+  if (!volume) return { fichier, surVolume: false, raison: 'Aucun volume n’est rattaché au service.' };
+  const v = path.resolve(volume);
+  const ok = fichier === v || fichier.startsWith(v + path.sep);
+  return { fichier, volume: v, surVolume: ok, raison: ok ? '' : `La base (${fichier}) n’est pas dans le volume (${v}).` };
+}
+
 function openDb(file) {
-  const dbFile = file || process.env.DB_PATH || path.join(__dirname, '..', 'data', 'mariage.db');
+  const dbFile = file || cheminBase();
   if (dbFile !== ':memory:') fs.mkdirSync(path.dirname(dbFile), { recursive: true });
   const db = new Database(dbFile);
   db.pragma('journal_mode = WAL');
@@ -59,4 +79,4 @@ function setInfos(db, infos) {
     .run(JSON.stringify(infos));
 }
 
-module.exports = { openDb, getInfos, setInfos, DEFAULT_INFOS };
+module.exports = { cheminBase, stockage, openDb, getInfos, setInfos, DEFAULT_INFOS };
