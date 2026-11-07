@@ -120,3 +120,4 @@ main{padding:22px 0 60px}
 .ph-actions{display:flex;gap:10px;flex-wrap:wrap;padding:6px 10px 10px}
 .lien-s{background:none;border:0;font:500 13px var(--sans);color:var(--canard);text-decoration:underline;cursor:pointer;padding:0}
 .lien-s.rouge{color:var(--err)}
+.ouverture{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}

@@ -84,8 +84,8 @@ function createApp(options = {}) {
     // La chanson n'est servie que si le site est protégé par un code
     if (!guestCode && req.path.startsWith('/sons/chanson')) return res.status(404).type('text').send('Introuvable.');
     if (invite(req) || LIBRES.has(req.path) || req.path.startsWith('/api/admin')) return next();
-    // Les mariés voient les photos depuis /admin sans code invité
-    if (req.path.startsWith('/photos/f/') && verifyToken(req.cookies[COOKIE], secret)) return next();
+    // Les mariés connectés à /admin voient tout le site sans code invité
+    if (verifyToken(req.cookies[COOKIE], secret)) return next();
     // Lien d'invitation avec le code intégré : …/?code=XXXX
     if (req.method === 'GET' && req.query.code !== undefined) {
       if (inviteLimiter(req.ip) && codeOk(req.query.code)) {
@@ -108,12 +108,20 @@ function createApp(options = {}) {
     res.json({ ok: true });
   });
 
-  const sendIndex = (req, res) => res.type('html').send(withOrigin(indexTpl, req));
+  // Partage de photos : fermé par défaut (« à venir »), ouvert depuis /admin → Photos
+  const photosOuvert = () => (db.prepare("SELECT value FROM settings WHERE key = 'photos_ouvert'").get() || {}).value === '1';
+  const estAdmin = (req) => verifyToken(req.cookies[COOKIE], secret);
+  const LIEN_PHOTOS = '<a href="/photos">Photos</a>';
+  const sendIndex = (req, res) => {
+    let html = withOrigin(indexTpl, req);
+    if (!photosOuvert()) html = html.replace(LIEN_PHOTOS, '<span class="nav-bientot" title="Bientôt disponible">Photos <small>à venir</small></span>');
+    res.type('html').send(html);
+  };
   app.get('/', sendIndex);
   app.get('/index.html', sendIndex);
   app.get('/admin', (req, res) => res.sendFile(path.join(pub, 'admin.html')));
-  app.get('/photos', (req, res) => res.sendFile(path.join(pub, 'photos.html')));
-  app.get('/diaporama', (req, res) => res.sendFile(path.join(pub, 'diaporama.html')));
+  app.get('/photos', (req, res) => res.sendFile(path.join(pub, photosOuvert() || estAdmin(req) ? 'photos.html' : 'photos-bientot.html')));
+  app.get('/diaporama', (req, res) => res.sendFile(path.join(pub, photosOuvert() || estAdmin(req) ? 'diaporama.html' : 'photos-bientot.html')));
   app.use(express.static(pub, { index: false, maxAge: isProd ? '1h' : 0 }));
 
   // ---------- API publique ----------
@@ -152,6 +160,10 @@ function createApp(options = {}) {
   const MAX_PHOTO = 12 * 1024 * 1024;
   const photoOut = (p) => ({ id: p.id, auteur: p.auteur, url: `/photos/f/${p.fichier}`, le: p.created_at });
   const lienPhotos = (req) => `${req.protocol}://${req.get('host')}/photos${guestCode ? '?code=' + encodeURIComponent(guestCode) : ''}`;
+
+  const photosFerme = (req, res, next) => (photosOuvert() || estAdmin(req) ? next()
+    : res.status(403).json({ error: 'PHOTOS_FERMEES', message: 'Le partage de photos ouvrira bientôt.' }));
+  app.use(['/api/photos', '/api/photos.zip', '/photos/f'], photosFerme);
 
   app.post('/api/photos', express.raw({ type: ['image/jpeg', 'image/png', 'image/webp'], limit: MAX_PHOTO }), (req, res) => {
     if (!photoLimiter(req.ip)) return res.status(429).json({ error: 'TOO_MANY', message: 'Beaucoup de photos d’un coup ! Réessayez dans quelques minutes.' });
@@ -303,7 +315,12 @@ function createApp(options = {}) {
   // Photos : modération et QR code à imprimer (le code invité y est intégré)
   admin.get('/photos', (req, res) => {
     const rows = db.prepare('SELECT * FROM photos ORDER BY id DESC').all();
-    res.json({ photos: rows.map((p) => ({ ...photoOut(p), masquee: !!p.masquee, taille: p.taille })), lien: lienPhotos(req) });
+    res.json({ photos: rows.map((p) => ({ ...photoOut(p), masquee: !!p.masquee, taille: p.taille })), lien: lienPhotos(req), ouvert: photosOuvert() });
+  });
+  admin.put('/photos-ouvert', (req, res) => {
+    const ouvert = !!(req.body && req.body.ouvert);
+    db.prepare("INSERT INTO settings (key, value) VALUES ('photos_ouvert', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(ouvert ? '1' : '0');
+    res.json({ ok: true, ouvert });
   });
   admin.get('/photos.zip', (req, res, next) => {
     zipPhotos(db.prepare('SELECT * FROM photos ORDER BY id').all(), res, 'toutes-les-photos-mariage.zip').catch(next);

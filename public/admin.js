@@ -226,6 +226,11 @@
     try {
       const d = await api('/api/admin/photos');
       $('#qr-lien').textContent = d.lien;
+      $('#photos-etat').textContent = d.ouvert
+        ? 'Ouvert : les invités voient « Photos » sur le site et peuvent envoyer et télécharger.'
+        : 'Fermé : le site affiche « Photos · à venir ». Vous seuls (connectés ici) pouvez tester la page d’envoi et le diaporama.';
+      $('#photos-bascule').textContent = d.ouvert ? 'Fermer (remettre « à venir »)' : 'Ouvrir aux invités';
+      $('#photos-bascule').dataset.ouvert = d.ouvert ? '1' : '0';
       const visibles = d.photos.filter((p) => !p.masquee).length;
       const mo = d.photos.reduce((s, p) => s + p.taille, 0) / 1048576;
       $('#photos-resume').textContent = d.photos.length
@@ -243,6 +248,12 @@
         </figure>`).join('');
     } catch (e) { /* login affiché */ }
   }
+  $('#photos-bascule').addEventListener('click', async (e) => {
+    const ouvrir = e.currentTarget.dataset.ouvert !== '1';
+    if (!confirm(ouvrir ? 'Ouvrir le partage de photos à tous les invités ?' : 'Remettre le partage de photos en « à venir » ?')) return;
+    await api('/api/admin/photos-ouvert', { method: 'PUT', body: JSON.stringify({ ouvert: ouvrir }) });
+    chargerPhotos();
+  });
   document.addEventListener('click', async (e) => {
     const m = e.target.closest('[data-masquer]');
     const s = e.target.closest('[data-suppr]');

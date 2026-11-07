@@ -324,3 +324,7 @@ footer .serif{font-family:var(--serif);font-style:italic;font-size:18px;color:va
 .musique.joue .muet{display:none}
 .musique:not(.joue){background:var(--papier);color:var(--canard);border:1.5px solid var(--canard)}
 @media(prefers-reduced-motion:reduce){.musique .eq i{animation:none;height:12px}}
+nav .nav-bientot{font-size:14px;font-weight:500;color:var(--encre-2);padding:7px 12px;border-radius:99px;white-space:nowrap;border:1px dashed var(--ligne);cursor:default}
+nav .nav-bientot small{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--terracotta)}
+/* Sur téléphone, la place manque : « Photos à venir » n'apparaît que sur les écrans plus larges */
+@media(max-width:480px){nav .nav-bientot{display:none}}

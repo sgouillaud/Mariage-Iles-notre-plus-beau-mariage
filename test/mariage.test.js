@@ -190,6 +190,15 @@ test('Photos : envoi, liste, diaporama, modération et QR code', async () => {
   let r = await request(app).get('/photos?code=Iles2027');
   assert.equal(r.status, 302); assert.equal(r.headers.location, '/photos');
   const c = r.headers['set-cookie'];
+  // Fermé par défaut : « à venir » pour les invités, envoi refusé
+  assert.match((await request(app).get('/photos').set('Cookie', c)).text, /Bientôt, vos photos/);
+  assert.match((await request(app).get('/').set('Cookie', c)).text, /nav-bientot/);
+  assert.equal((await request(app).post('/api/photos').set('Cookie', c).set('Content-Type', 'image/jpeg').send(JPEG)).status, 403);
+  assert.equal((await request(app).get('/api/photos.zip').set('Cookie', c)).status, 403);
+  const a0 = await login(app);
+  assert.match((await request(app).get('/photos').set('Cookie', a0)).text, /Partagez vos photos/);
+  await request(app).put('/api/admin/photos-ouvert').set('Cookie', a0).send({ ouvert: true });
+  assert.match((await request(app).get('/').set('Cookie', c)).text, /<a href="\/photos">Photos<\/a>/);
   assert.equal((await request(app).get('/photos').set('Cookie', c)).status, 200);
   assert.equal((await request(app).get('/diaporama').set('Cookie', c)).status, 200);
   // Fichier qui n'est pas une image : refusé
