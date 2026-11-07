@@ -323,8 +323,14 @@ function createApp(options = {}) {
     res.json({ ok: true, ouvert });
   });
   // Affiche A5 pour les plexis (QR code avec le code invité intégré), à imprimer en PDF
-  const afficheTpl = fs.readFileSync(path.join(__dirname, 'src', 'affiche.html'), 'utf8');
-  admin.get('/affiche-photos', (req, res) => res.type('html').send(afficheTpl.replace('__QR__', qrMariage.svg(lienPhotos(req)))));
+  const AFFICHES = {
+    carte: fs.readFileSync(path.join(__dirname, 'src', 'affiche.html'), 'utf8'),
+    embarquement: fs.readFileSync(path.join(__dirname, 'src', 'affiche-embarquement.html'), 'utf8'),
+  };
+  admin.get('/affiche-photos', (req, res) => {
+    const tpl = AFFICHES[req.query.modele] || AFFICHES.carte;
+    res.type('html').send(tpl.replace('__QR__', qrMariage.svg(lienPhotos(req))));
+  });
   admin.get('/photos.zip', (req, res, next) => {
     zipPhotos(db.prepare('SELECT * FROM photos ORDER BY id').all(), res, 'toutes-les-photos-mariage.zip').catch(next);
   });

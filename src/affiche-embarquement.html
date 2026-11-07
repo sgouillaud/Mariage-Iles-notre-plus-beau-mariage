@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Affiche QR photos · carte d'embarquement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/affiche.css">
+</head>
+<body>
+<div class="barre-outils">
+  <p><b>Modèle « carte d'embarquement » (format A5).</b> Cliquez sur « Imprimer », puis « Enregistrer en PDF ». Cochez « Graphiques d'arrière-plan » et mettez les marges sur « Aucune ».</p>
+  <button type="button" id="imprimer">Imprimer / PDF</button>
+</div>
+<main class="affiche embarquement">
+  <div class="billet">
+    <header class="b-haut">
+      <span>Carte d'embarquement</span>
+      <span>Vol IL 2627 ✈</span>
+    </header>
+    <div class="b-corps">
+      <img class="b-logo" src="/logo.webp" alt="Il.e.s · Cédric &amp; Sébastien">
+      <h1>Toi aussi,<br><em>partage tes plus belles photos</em></h1>
+      <p class="sous">avec tous les invités ❤️</p>
+      <dl class="b-champs">
+        <div><dt>Passager</dt><dd>Toi&nbsp;!</dd></div>
+        <div><dt>Destination</dt><dd>Notre album 📸</dd></div>
+        <div><dt>Porte</dt><dd>Ce QR code</dd></div>
+        <div><dt>Embarquement</dt><dd>Maintenant ✨</dd></div>
+      </dl>
+    </div>
+    <div class="b-coupe" aria-hidden="true"></div>
+    <div class="b-talon">
+      <div class="qr">__QR__</div>
+      <div class="b-talon-txt">
+        <p class="b-scanne">Scanne-moi&nbsp;!</p>
+        <p>Choisis tes photos, elles s'affichent en direct sur l'écran de la soirée.</p>
+        <p class="b-date">26.06.2027 · Cloyes</p>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="/affiche.js" defer></script>
+</body>
+</html>

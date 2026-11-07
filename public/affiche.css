@@ -18,3 +18,25 @@ h1 em{display:block;font-style:italic;font-weight:500;color:var(--terracotta);fo
 .etapes span{font-size:6mm}
 .pied{margin-top:auto;font-family:var(--serif);font-size:3.4mm;color:var(--encre-2)}
 @media print{body{background:none}.barre-outils{display:none}.affiche{margin:0;box-shadow:none}}
+
+/* Modèle « carte d'embarquement » */
+.embarquement{padding:8mm;background:var(--canard)}
+.billet{height:100%;background:var(--papier);border-radius:7mm;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.b-haut{display:flex;justify-content:space-between;background:var(--terracotta);color:#fff;font:600 3.6mm var(--sans);letter-spacing:.16em;text-transform:uppercase;padding:4.5mm 7mm}
+.b-corps{padding:5mm 8mm 3mm;text-align:center;display:flex;flex-direction:column;align-items:center}
+.b-logo{width:24mm;height:24mm;border-radius:50%}
+.embarquement h1{font-size:8mm;margin-top:2.5mm}
+.embarquement h1 em{font-size:7.4mm}
+.embarquement .sous{font-size:5mm;margin-top:1.2mm}
+.b-champs{display:grid;grid-template-columns:1fr 1fr;gap:2.5mm 6mm;margin-top:4.5mm;width:100%;text-align:left}
+.b-champs div{border-top:.4mm solid var(--ligne);padding-top:1.4mm}
+.b-champs dt{font-size:2.6mm;letter-spacing:.16em;text-transform:uppercase;color:var(--encre-2);font-weight:600}
+.b-champs dd{font-family:var(--serif);font-size:4.6mm;color:var(--canard);font-weight:600}
+.b-coupe{position:relative;height:8mm;margin:2mm 0}
+.b-coupe::before{content:"";position:absolute;left:6mm;right:6mm;top:50%;border-top:.7mm dashed var(--ligne)}
+.b-coupe::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 0 50%,var(--canard) 4mm,transparent 4.1mm),radial-gradient(circle at 100% 50%,var(--canard) 4mm,transparent 4.1mm)}
+.b-talon{flex:1;display:flex;align-items:center;gap:6mm;padding:0 8mm 6mm}
+.b-talon .qr{width:58mm;height:58mm;margin:0;flex:none}
+.b-talon-txt{font-size:3.7mm;color:var(--canard);line-height:1.35;text-align:left}
+.b-scanne{font-family:var(--serif);font-style:italic;font-weight:500;font-size:7mm;color:var(--terracotta);line-height:1.1;margin-bottom:2mm}
+.b-date{margin-top:3mm;font-size:3mm;letter-spacing:.16em;text-transform:uppercase;color:var(--encre-2);font-weight:600}
