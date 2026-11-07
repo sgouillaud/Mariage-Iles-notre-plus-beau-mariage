@@ -62,3 +62,22 @@ input:focus{outline:none;border-color:var(--canard)}
 .plein{position:fixed;top:16px;right:16px;font:500 14px var(--sans);background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .3s}
 .page-diapo.souris .plein{opacity:1}
 @media (prefers-reduced-motion:reduce){.scene .vue{transition:none}}
+
+/* Album : téléchargement et visionneuse */
+.titre-ligne{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.titre-ligne h2{margin:0}
+.btn-mini{display:inline-flex;align-items:center;gap:6px;font:600 14px var(--sans);border:1.5px solid var(--canard);color:var(--canard);background:transparent;border-radius:99px;padding:8px 14px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn-mini.clair{border-color:#fff;color:#fff}
+.btn-mini[hidden]{display:none}
+#compte{margin:2px 0 12px}
+.grille button{all:unset;display:block;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--sable);cursor:pointer}
+.grille button img{width:100%;height:100%;object-fit:cover}
+.grille button:focus-visible{outline:3px solid var(--terracotta);outline-offset:2px}
+.visionneuse{position:fixed;inset:0;z-index:50;background:rgba(20,17,15,.96);display:flex;align-items:center;justify-content:center;touch-action:pan-y}
+.visionneuse[hidden]{display:none}
+.visionneuse img{max-width:100vw;max-height:calc(100vh - 140px);object-fit:contain}
+.v-fermer,.v-prec,.v-suiv{position:absolute;background:rgba(20,17,15,.55);color:#fff;border:0;border-radius:50%;width:46px;height:46px;font:400 26px/1 var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.v-fermer{top:max(14px,env(safe-area-inset-top));right:14px;font-size:20px}
+.v-prec{left:10px;top:50%;transform:translateY(-50%)}
+.v-suiv{right:10px;top:50%;transform:translateY(-50%)}
+.v-bas{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px;color:var(--creme);font-family:var(--serif);font-style:italic;font-size:18px}

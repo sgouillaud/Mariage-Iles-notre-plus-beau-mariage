@@ -58,6 +58,7 @@ mariage-iles/
 
 **Photos des invités (QR code)**
 - `/photos` : les invités envoient leurs photos depuis leur téléphone (compressées automatiquement, plusieurs d'un coup).
+- Album sur la même page : chaque invité peut agrandir une photo et l'enregistrer dans sa pellicule, ou tout télécharger en .zip.
 - `/diaporama` : à ouvrir sur l'ordinateur relié à l'écran ou au vidéoprojecteur (bouton « Plein écran ») ;
   les nouvelles photos passent en priorité, avec le prénom de l'auteur et un QR code dans le coin.
 - `/admin` → onglet **Photos** : QR code à imprimer (code invité intégré), masquer / supprimer / télécharger les photos.

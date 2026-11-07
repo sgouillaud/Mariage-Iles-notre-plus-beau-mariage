@@ -10,6 +10,7 @@ const { openDb, getInfos, setInfos } = require('./src/db');
 const { cleanRsvp, RsvpError } = require('./src/rsvp');
 const { cleanInfos } = require('./src/infos');
 const { COOKIE, MAX_AGE_MS, checkPassword, createToken, verifyToken, rateLimiter } = require('./src/auth');
+const { envoyerZip } = require('./src/zip');
 const { INVITE_COOKIE, INVITE_MAX_AGE_MS, createInviteToken, verifyInviteToken } = require('./src/invite');
 
 function csvCell(v) {
@@ -173,12 +174,26 @@ function createApp(options = {}) {
     res.json({ photos: rows.map(photoOut) });
   });
 
+  // Toutes les photos en un fichier .zip (nommées par date et auteur)
+  const nomZip = (p, i) => {
+    const auteur = (p.auteur || 'invite').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9-]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'invite';
+    return `${String(i + 1).padStart(4, '0')}-${auteur}.${p.fichier.split('.').pop()}`;
+  };
+  const zipPhotos = (rows, res, nom) => {
+    res.set({ 'Content-Type': 'application/zip', 'Content-Disposition': `attachment; filename="${nom}"`, 'Cache-Control': 'no-store' });
+    return envoyerZip(res, rows.map((p, i) => ({ nom: nomZip(p, i), chemin: path.join(photosDir, p.fichier) })));
+  };
+  app.get('/api/photos.zip', (req, res, next) => {
+    zipPhotos(db.prepare('SELECT * FROM photos WHERE masquee = 0 ORDER BY id').all(), res, 'photos-mariage-cedric-sebastien.zip').catch(next);
+  });
+
   app.get('/photos/f/:fichier', (req, res) => {
     const f = String(req.params.fichier);
     if (!/^[0-9]+-[0-9a-f]{12}\.(jpg|png|webp)$/.test(f)) return res.status(404).type('text').send('Introuvable.');
     const p = db.prepare('SELECT masquee FROM photos WHERE fichier = ?').get(f);
     if (!p || (p.masquee && !verifyToken(req.cookies[COOKIE], secret))) return res.status(404).type('text').send('Introuvable.');
     res.set('Cache-Control', 'private, max-age=86400');
+    if (req.query.dl !== undefined) res.attachment(`photo-mariage-${f}`);
     res.sendFile(path.join(photosDir, f));
   });
 
@@ -289,6 +304,9 @@ function createApp(options = {}) {
   admin.get('/photos', (req, res) => {
     const rows = db.prepare('SELECT * FROM photos ORDER BY id DESC').all();
     res.json({ photos: rows.map((p) => ({ ...photoOut(p), masquee: !!p.masquee, taille: p.taille })), lien: lienPhotos(req) });
+  });
+  admin.get('/photos.zip', (req, res, next) => {
+    zipPhotos(db.prepare('SELECT * FROM photos ORDER BY id').all(), res, 'toutes-les-photos-mariage.zip').catch(next);
   });
   admin.post('/photos/:id/masquer', (req, res) => {
     const masquee = req.body && req.body.masquee ? 1 : 0;

@@ -31,12 +31,26 @@
   </form>
 
   <section class="dernieres">
-    <h2>Les dernières escales</h2>
+    <div class="titre-ligne">
+      <h2>L'album</h2>
+      <a id="tout" class="btn-mini" href="/api/photos.zip" download hidden>⬇ Tout télécharger</a>
+    </div>
+    <p class="aide" id="compte"></p>
     <div id="grille" class="grille"></div>
     <p id="vide" class="aide">Aucune photo pour l'instant : soyez le premier !</p>
   </section>
   <p class="retour"><a href="/">← Retour au site</a></p>
 </main>
+<div id="visionneuse" class="visionneuse" hidden>
+  <button class="v-fermer" type="button" aria-label="Fermer">✕</button>
+  <button class="v-prec" type="button" aria-label="Photo précédente">‹</button>
+  <img id="v-img" alt="">
+  <button class="v-suiv" type="button" aria-label="Photo suivante">›</button>
+  <div class="v-bas">
+    <span id="v-auteur"></span>
+    <button id="v-garder" class="btn-mini clair" type="button">⬇ Enregistrer</button>
+  </div>
+</div>
 <script src="/photos.js" defer></script>
 </body>
 </html>

@@ -203,6 +203,13 @@ test('Photos : envoi, liste, diaporama, modération et QR code', async () => {
   const url = r.body.photos[0].url;
   assert.equal((await request(app).get(url).set('Cookie', c)).status, 200);
   assert.equal((await request(app).get(url)).status, 404);
+  const zip = await request(app).get('/api/photos.zip').set('Cookie', c).buffer(true).parse((res, cb) => { const d = []; res.on('data', (x) => d.push(x)); res.on('end', () => cb(null, Buffer.concat(d))); });
+  assert.equal(zip.status, 200);
+  assert.equal(zip.body.readUInt32LE(0), 0x04034b50);
+  assert.ok(zip.body.includes(Buffer.from('0001-Lea-b.jpg')));
+  assert.ok(zip.body.includes(JPEG));
+  assert.equal((await request(app).get('/api/photos.zip')).status, 401);
+  assert.match((await request(app).get(url + '?dl=1').set('Cookie', c)).headers['content-disposition'], /attachment/);
   const qr = await request(app).get('/api/qr-photos.svg').set('Cookie', c);
   assert.equal(qr.status, 200); assert.match(qr.headers['content-type'], /image\/svg\+xml/);
   // Admin : QR à imprimer avec le code intégré, masquer puis supprimer
