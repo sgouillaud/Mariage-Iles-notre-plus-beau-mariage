@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Affiche QR photos · plexis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/affiche.css">
+</head>
+<body>
+<div class="barre-outils">
+  <p><b>Affiche pour les plexis (format A5).</b> Cliquez sur « Imprimer », puis choisissez « Enregistrer en PDF » pour l'envoyer à l'imprimeur. Pensez à cocher « Graphiques d'arrière-plan » et à mettre les marges sur « Aucune ».</p>
+  <button type="button" id="imprimer">Imprimer / PDF</button>
+</div>
+<main class="affiche">
+  <div class="cadre">
+    <img class="logo" src="/logo.webp" alt="Il.e.s · Cédric &amp; Sébastien">
+    <p class="eyebrow">Carnet de voyage</p>
+    <h1>Toi aussi,<br><em>partage tes plus belles photos</em></h1>
+    <p class="sous">ici, avec tous les invités ❤️</p>
+    <div class="qr">__QR__</div>
+    <ol class="etapes">
+      <li><span>📱</span>Scanne</li>
+      <li><span>📸</span>Choisis tes photos</li>
+      <li><span>✨</span>Elles s'affichent en direct</li>
+    </ol>
+    <p class="pied">Cédric &amp; Sébastien · 26.06.2027 · <i>Notre plus beau voyage</i></p>
+  </div>
+</main>
+<script src="/affiche.js" defer></script>
+</body>
+</html>

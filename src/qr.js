@@ -24,15 +24,14 @@ function matrice(texte) {
 function svg(texte) {
   const { n, noir, oeil, libre, zone, z0 } = matrice(texte);
   const t = n + 2 * MARGE;
-  let d = '';
+  // Modules carrés (yeux compris) : c'est la forme la plus sûre à scanner
+  let d = '', e = '';
   for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
-    if (noir(r, c) && !oeil(r, c) && !libre(r, c)) d += `M${c + MARGE} ${r + MARGE}h1v1h-1z`;
+    if (!noir(r, c) || libre(r, c)) continue;
+    const m = `M${c + MARGE} ${r + MARGE}h1v1h-1z`;
+    if (oeil(r, c)) e += m; else d += m;
   }
-  const yeux = [[0, 0], [0, n - 7], [n - 7, 0]].map(([r, c]) => {
-    const x = c + MARGE, y = r + MARGE;
-    return `<rect x="${x + 0.5}" y="${y + 0.5}" width="6" height="6" rx="1.6" fill="none" stroke="${TERRACOTTA}" stroke-width="1"/>` +
-      `<rect x="${x + 2}" y="${y + 2}" width="3" height="3" rx="0.8" fill="${TERRACOTTA}"/>`;
-  }).join('');
+  const yeux = `<path d="${e}" fill="${TERRACOTTA}"/>`;
   const lx = z0 + MARGE, cx = lx + zone / 2;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${t} ${t}" shape-rendering="crispEdges">` +
     `<rect width="${t}" height="${t}" rx="2" fill="${CREME}"/>` +

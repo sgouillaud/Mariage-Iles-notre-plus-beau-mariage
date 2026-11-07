@@ -322,6 +322,9 @@ function createApp(options = {}) {
     db.prepare("INSERT INTO settings (key, value) VALUES ('photos_ouvert', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(ouvert ? '1' : '0');
     res.json({ ok: true, ouvert });
   });
+  // Affiche A5 pour les plexis (QR code avec le code invité intégré), à imprimer en PDF
+  const afficheTpl = fs.readFileSync(path.join(__dirname, 'src', 'affiche.html'), 'utf8');
+  admin.get('/affiche-photos', (req, res) => res.type('html').send(afficheTpl.replace('__QR__', qrMariage.svg(lienPhotos(req)))));
   admin.get('/photos.zip', (req, res, next) => {
     zipPhotos(db.prepare('SELECT * FROM photos ORDER BY id').all(), res, 'toutes-les-photos-mariage.zip').catch(next);
   });
