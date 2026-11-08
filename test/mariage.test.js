@@ -185,7 +185,8 @@ test('Photos : envoi, liste, diaporama, modération et QR code', async () => {
   const app = createApp({ db, adminPassword: PWD, sessionSecret: 'x'.repeat(40), env: 'test', guestCode: 'Iles2027', photosDir: dir });
   // Sans code invité : rien n'est accessible
   assert.equal((await request(app).post('/api/photos').set('Content-Type', 'image/jpeg').send(JPEG)).status, 401);
-  assert.equal((await request(app).get('/photos')).status, 404);
+  let rr = await request(app).get('/photos');
+  assert.equal(rr.status, 302); assert.equal(rr.headers.location, '/?suite=%2Fphotos');
   // Le lien du QR code ouvre la page photos avec le code
   let r = await request(app).get('/photos?code=Iles2027');
   assert.equal(r.status, 302); assert.equal(r.headers.location, '/photos');

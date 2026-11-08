@@ -13,7 +13,8 @@
       const r = await fetch('/api/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.message || 'Code refusé.');
-      location.replace('/');
+      const suite = new URLSearchParams(location.search).get('suite') || '/';
+      location.replace(/^\/[a-z]*$/.test(suite) ? suite : '/');
     } catch (ex) {
       err.textContent = ex.message === 'Failed to fetch' ? 'Connexion impossible, réessayez.' : ex.message;
       btn.disabled = false; btn.textContent = 'Ouvrir l\'invitation';

@@ -124,6 +124,9 @@ function createApp(options = {}) {
     if (req.method === 'GET' && (req.path === '/' || req.path === '/index.html')) {
       return res.status(200).type('html').send(withOrigin(porteTpl, req));
     }
+    // Page du site ouverte sans code (ex. lien ouvert dans une autre appli) : on passe par la porte d'entrée, puis on revient
+    const PAGES = ['/photos', '/diaporama', '/escales', '/cartes', '/playlist', '/quiz', '/pronostics'];
+    if (req.method === 'GET' && PAGES.includes(req.path)) return res.redirect(302, '/?suite=' + encodeURIComponent(req.path));
     return res.status(404).type('text').send('Introuvable.');
   });
 
