@@ -280,7 +280,7 @@
   });
 
   // ---------- Animations ----------
-  const NOMS_ANIM = { photos: '📸 Photos & diaporama', missions: '🎯 Missions d’escale', coeurs: '❤ Cœurs sur les photos', cartes: '💌 Cartes postales', playlist: '🎶 Playlist', quiz: '🧠 Quiz', pronos: '🔮 Pronostics' };
+  const NOMS_ANIM = { photos: '📸 ILESstagram (photos & diaporama)', missions: '🎯 Missions d’escale', coeurs: '❤ Cœurs sur les photos', commentaires: '💬 Commentaires sur les photos', cartes: '💌 Cartes postales', playlist: '🎶 Playlist', quiz: '🧠 Quiz', pronos: '🔮 Pronostics' };
   let pronosReveles = false;
   async function chargerAnimations() {
     let d;
@@ -292,6 +292,8 @@
     $('#an-missions-stats').innerHTML = d.missions.map((m) => `<li>${esc(m.mission)} <b>${m.photos} photo${m.photos > 1 ? 's' : ''}</b></li>`).join('');
     $('#an-top').innerHTML = d.topPhotos.map((p) => `<figure class="ph"><a href="${p.url}" target="_blank" rel="noopener"><img src="${p.url}" alt="" loading="lazy"></a>
       <figcaption>❤ ${p.coeurs} · ${esc(p.auteur || 'Anonyme')}<small>${esc(p.mission || '')}</small></figcaption></figure>`).join('') || '<p class="petit">Pas encore de cœurs.</p>';
+    $('#an-coms').innerHTML = d.commentaires.map((c) => `<div class="an-com"><a href="${c.url}" target="_blank" rel="noopener"><img src="${c.url}" alt="" loading="lazy"></a>
+      <p><b>${esc(c.auteur)}</b> ${esc(c.texte)}<br><span class="petit">${esc(c.le)}</span></p><button class="lien-s rouge" data-com-suppr="${c.id}">Supprimer</button></div>`).join('') || '<p class="petit">Aucun commentaire pour l’instant.</p>';
     $('#an-cartes').innerHTML = d.cartes.map((c) => `<div class="an-carte ${c.masquee ? 'masquee' : ''}">
       <p>${esc(c.message).replace(/\n/g, '<br>')}</p><p class="petit">— ${esc(c.auteur)} · timbre ${esc(c.timbre)} · ${esc(c.le)}</p>
       <div class="ph-actions"><button class="lien-s" data-carte-masquer="${c.id}" data-etat="${c.masquee ? 0 : 1}">${c.masquee ? 'Remettre' : 'Masquer'}</button>
@@ -325,6 +327,7 @@
     }
     if (t.id === 'an-reveler') return run('/api/admin/pronos-revele', { method: 'PUT', body: JSON.stringify({ revele: !pronosReveles }) });
     if (t.dataset.carteMasquer) return run(`/api/admin/cartes/${t.dataset.carteMasquer}/masquer`, { method: 'POST', body: JSON.stringify({ masquee: t.dataset.etat === '1' }) });
+    if (t.dataset.comSuppr && confirm('Supprimer ce commentaire ?')) return run(`/api/admin/commentaires/${t.dataset.comSuppr}`, { method: 'DELETE' });
     if (t.dataset.carteSuppr && confirm('Supprimer cette carte postale ?')) return run(`/api/admin/cartes/${t.dataset.carteSuppr}`, { method: 'DELETE' });
     if (t.dataset.titreSuppr && confirm('Retirer ce titre de la playlist ?')) return run(`/api/admin/playlist/${t.dataset.titreSuppr}`, { method: 'DELETE' });
     if (t.dataset.joueurSuppr && confirm('Effacer ce score ? La personne pourra rejouer.')) return run(`/api/admin/quiz/${t.dataset.joueurSuppr}`, { method: 'DELETE' });

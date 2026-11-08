@@ -196,7 +196,7 @@ test('Photos : envoi, liste, diaporama, modération et QR code', async () => {
   assert.equal((await request(app).post('/api/photos').set('Cookie', c).set('Content-Type', 'image/jpeg').send(JPEG)).status, 403);
   assert.equal((await request(app).get('/api/photos.zip').set('Cookie', c)).status, 403);
   const a0 = await login(app);
-  assert.match((await request(app).get('/photos').set('Cookie', a0)).text, /Partagez vos photos/);
+  assert.match((await request(app).get('/photos').set('Cookie', a0)).text, /ILESstagram/);
   await request(app).put('/api/admin/photos-ouvert').set('Cookie', a0).send({ ouvert: true });
   assert.match((await request(app).get('/').set('Cookie', c)).text, /<a href="\/escales">Escales<\/a>/);
   assert.equal((await request(app).get('/photos').set('Cookie', c)).status, 200);
@@ -271,7 +271,7 @@ test('Animations : fermées par défaut, puis missions, cœurs, cartes, playlist
   assert.equal((await agent.get('/api/escales')).body.missions.length, 0);
   // Les mariés ouvrent tout
   const a = await login(app);
-  for (const nom of ['photos', 'missions', 'coeurs', 'cartes', 'playlist', 'quiz', 'pronos']) {
+  for (const nom of ['photos', 'missions', 'coeurs', 'commentaires', 'cartes', 'playlist', 'quiz', 'pronos']) {
     assert.equal((await request(app).put('/api/admin/animations/ouvert').set('Cookie', a).send({ nom, ouvert: true })).status, 200);
   }
   assert.match((await agent.get('/')).text, /<a href="\/escales">Escales<\/a>/);
@@ -292,6 +292,12 @@ test('Animations : fermées par défaut, puis missions, cœurs, cartes, playlist
   assert.equal((await autre.post(`/api/photos/${pid}/coeur`)).body.coeurs, 2);
   assert.equal((await agent.post(`/api/photos/${pid}/coeur`)).body.coeurs, 1);
   assert.equal((await autre.get('/api/photos')).body.photos.find((p) => p.id === pid).aime, true);
+  // Commentaires
+  assert.equal((await agent.post(`/api/photos/${pid}/commentaires`).send({ auteur: 'Léa', texte: '' })).status, 400);
+  await agent.post(`/api/photos/${pid}/commentaires`).send({ auteur: 'Léa', texte: 'Trop beaux ! 😍' });
+  const coms = (await autre.post(`/api/photos/${pid}/commentaires`).send({ auteur: 'Tom', texte: 'Magnifique' })).body.commentaires;
+  assert.deepEqual(coms.map((c) => c.auteur), ['Léa', 'Tom']);
+  assert.equal((await agent.get('/api/photos')).body.photos.find((p) => p.id === pid).commentaires, 2);
   // Cartes postales
   assert.equal((await agent.post('/api/cartes').send({ auteur: '', message: 'x' })).status, 400);
   await agent.post('/api/cartes').send({ auteur: 'Léa <b>', message: 'Tous nos vœux\nde bonheur', timbre: 'Corse' });

@@ -77,6 +77,11 @@ function openDb(file) {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       PRIMARY KEY (photo_id, appareil)
     );
+    CREATE TABLE IF NOT EXISTS photo_commentaires (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      photo_id INTEGER NOT NULL, auteur TEXT NOT NULL, texte TEXT NOT NULL,
+      appareil TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
     CREATE TABLE IF NOT EXISTS cartes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       auteur TEXT NOT NULL, message TEXT NOT NULL, timbre TEXT NOT NULL DEFAULT '',

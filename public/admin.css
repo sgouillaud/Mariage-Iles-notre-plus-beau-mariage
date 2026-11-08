@@ -136,3 +136,6 @@ main{padding:22px 0 60px}
 .an-carte.masquee{opacity:.45}
 .an-prono{margin-top:12px}
 .an-prono ul{margin:4px 0 0 20px;font-size:15px}
+.an-com{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--ligne);padding:8px 0}
+.an-com img{width:48px;height:48px;object-fit:cover;border-radius:8px}
+.an-com p{flex:1;font-size:15px}

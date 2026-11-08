@@ -191,7 +191,7 @@ function createApp(options = {}) {
   const photoLimiter = rateLimiter({ windowMs: 10 * 60 * 1000, max: options.photoRateMax ?? 80 });
   const MAX_PHOTO = 12 * 1024 * 1024;
   const photoOut = (p) => ({ id: p.id, auteur: p.auteur, mission: p.mission || '', url: `/photos/f/${p.fichier}`, le: p.created_at,
-    coeurs: p.coeurs || 0, aime: !!p.aime });
+    coeurs: p.coeurs || 0, aime: !!p.aime, commentaires: p.nb_commentaires || 0 });
   const lienPhotos = (req) => `${req.protocol}://${req.get('host')}/photos${guestCode ? '?code=' + encodeURIComponent(guestCode) : ''}`;
 
   const photosFerme = (req, res, next) => (photosOuvert() || estAdmin(req) ? next()
@@ -219,7 +219,8 @@ function createApp(options = {}) {
   });
 
   app.get('/api/photos', (req, res) => {
-    const rows = db.prepare(`SELECT p.*, COUNT(v.appareil) AS coeurs, MAX(CASE WHEN v.appareil = ? THEN 1 ELSE 0 END) AS aime
+    const rows = db.prepare(`SELECT p.*, COUNT(v.appareil) AS coeurs, MAX(CASE WHEN v.appareil = ? THEN 1 ELSE 0 END) AS aime,
+      (SELECT COUNT(*) FROM photo_commentaires c WHERE c.photo_id = p.id) AS nb_commentaires
       FROM photos p LEFT JOIN photo_votes v ON v.photo_id = p.id WHERE p.masquee = 0 GROUP BY p.id ORDER BY p.id DESC LIMIT 500`).all(req.appareil);
     res.json({ photos: rows.map(photoOut) });
   });
@@ -421,6 +422,8 @@ function createApp(options = {}) {
     const p = db.prepare('SELECT fichier FROM photos WHERE id = ?').get(Number(req.params.id));
     if (!p) return res.json({ ok: false });
     db.prepare('DELETE FROM photos WHERE id = ?').run(Number(req.params.id));
+    db.prepare('DELETE FROM photo_votes WHERE photo_id = ?').run(Number(req.params.id));
+    db.prepare('DELETE FROM photo_commentaires WHERE photo_id = ?').run(Number(req.params.id));
     fs.rm(path.join(photosDir, p.fichier), { force: true }, () => {});
     res.json({ ok: true });
   });

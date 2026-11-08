@@ -35,7 +35,7 @@
 
   // ---------- Accueil des escales ----------
   const CARTES_HUB = [
-    { nom: 'photos', href: '/photos', icone: '📸', titre: 'Partagez vos photos', texte: 'Envoyez vos plus belles photos : elles s’affichent en direct sur l’écran de la soirée.' },
+    { nom: 'photos', href: '/photos', icone: '📸', titre: 'ILESstagram', texte: 'Notre réseau social du mariage : publiez vos photos, likez, commentez, partagez en story. En direct sur l’écran de la soirée !' },
     { nom: 'missions', href: '/photos#missions', icone: '🎯', titre: 'Missions d’escale', texte: 'Des défis photo à relever. Chaque mission accomplie tamponne votre passeport.' },
     { nom: 'cartes', href: '/cartes', icone: '💌', titre: 'Cartes postales', texte: 'Notre livre d’or : un petit mot sur une carte timbrée de nos îles.' },
     { nom: 'playlist', href: '/playlist', icone: '🎶', titre: 'La playlist', texte: 'Proposez vos titres et votez : le DJ suivra vos envies.' },

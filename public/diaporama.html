@@ -3,28 +3,37 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light">
 <meta name="robots" content="noindex">
-<title>Il.e.s · Diaporama</title>
+<title>ILESstagram · en direct</title>
 <link rel="icon" href="/logo.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/photos.css">
+<link rel="stylesheet" href="/ilesstagram.css">
 </head>
-<body class="page-diapo">
-<div id="scene" class="scene"></div>
-<div id="attente" class="attente">
-  <img src="/logo.webp" alt="" width="220" height="220">
-  <p>Scannez le QR code et partagez vos photos&nbsp;: elles apparaîtront ici.</p>
+<body class="page-insta">
+<div id="fond" class="di-fond"></div>
+<div class="di-voile"></div>
+<div id="scene" class="di-scene">
+  <div id="emplacement"></div>
+  <aside class="di-cote">
+    <img class="di-logo" src="/logo.webp" alt="Il.e.s · Cédric &amp; Sébastien">
+    <span class="ig-mot"><b>ILES</b>stagram</span>
+    <p class="di-slogan">Like, commente, partage&nbsp;: notre plus beau voyage en direct ✈</p>
+    <div class="di-qr">
+      <img src="/api/qr-photos.svg" alt="QR code pour publier vos photos" width="200" height="200">
+      <p>📸 Publie tes photos ici !</p>
+    </div>
+    <p id="compteur" class="di-compteur"></p>
+  </aside>
 </div>
-<img class="coin-logo" src="/logo.webp" alt="Il.e.s · Cédric &amp; Sébastien" width="150" height="150">
-<div class="legende" id="legende"><span class="leg-txt" id="leg-txt"></span></div>
-<aside class="coin-qr">
-  <span class="qr-titre">📸 Vos photos ici&nbsp;!</span>
-  <img src="/api/qr-photos.svg" alt="QR code pour envoyer vos photos" width="150" height="150">
-  <span class="qr-sous">Scannez, partagez, on affiche&nbsp;✨</span>
-</aside>
+<div id="attente" class="di-attente">
+  <span class="ig-mot"><b>ILES</b>stagram</span>
+  <p>Scanne le QR code et publie la première photo de la soirée&nbsp;✨</p>
+  <div class="di-qr"><img src="/api/qr-photos.svg" alt="QR code pour publier vos photos" width="260" height="260"><p>📸 Publie tes photos ici !</p></div>
+</div>
 <button id="plein" class="plein" type="button">Plein écran</button>
 <script src="/diaporama.js" defer></script>
 </body>

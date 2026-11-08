@@ -4,7 +4,7 @@
 const crypto = require('crypto');
 const express = require('express');
 
-const NOMS = ['photos', 'missions', 'coeurs', 'cartes', 'playlist', 'quiz', 'pronos'];
+const NOMS = ['photos', 'missions', 'coeurs', 'commentaires', 'cartes', 'playlist', 'quiz', 'pronos'];
 
 const TIMBRES = ['Île Maurice', 'La Réunion', 'Guadeloupe', 'Martinique', 'Les Saintes', 'Koh Samui', 'Corse'];
 
@@ -125,6 +125,22 @@ function monterAnimations({ app, admin, db, estAdmin, rateLimiter }) {
     res.json({ ok: true, coeurs: n, aime: !deja });
   }));
 
+  // ---------- Commentaires sur les photos ----------
+  const commentaires = (id) => db.prepare('SELECT id, auteur, texte, created_at AS le FROM photo_commentaires WHERE photo_id = ? ORDER BY id ASC LIMIT 200').all(id);
+  app.get('/api/photos/:id/commentaires', exiger('commentaires'), (req, res) => res.json({ commentaires: commentaires(Number(req.params.id)) }));
+  app.post('/api/photos/:id/commentaires', exiger('commentaires'), garde((req, res) => {
+    anti(req);
+    const id = Number(req.params.id);
+    if (!db.prepare('SELECT 1 FROM photos WHERE id = ? AND masquee = 0').get(id)) throw new AnimError(404, 'NOT_FOUND', 'Photo introuvable.');
+    const auteur = propre(req.body && req.body.auteur, 60), texte = propre(req.body && req.body.texte, 300);
+    if (!auteur) throw new AnimError(400, 'AUTEUR', 'Indiquez votre prénom.');
+    if (!texte) throw new AnimError(400, 'TEXTE', 'Écrivez un commentaire.');
+    const n = db.prepare("SELECT COUNT(*) AS n FROM photo_commentaires WHERE appareil = ? AND created_at > datetime('now', '-1 hour')").get(req.appareil).n;
+    if (n >= 40) throw new AnimError(429, 'TOO_MANY', 'Beaucoup de commentaires ! Faites une petite pause 😉');
+    db.prepare('INSERT INTO photo_commentaires (photo_id, auteur, texte, appareil) VALUES (?, ?, ?, ?)').run(id, auteur, texte, req.appareil);
+    res.json({ ok: true, commentaires: commentaires(id) });
+  }));
+
   // ---------- Cartes postales (livre d'or) ----------
   const carteOut = (c) => ({ id: c.id, auteur: c.auteur, message: c.message, timbre: c.timbre, le: c.created_at });
   app.get('/api/cartes', exiger('cartes'), (req, res) => {
@@ -237,6 +253,8 @@ function monterAnimations({ app, admin, db, estAdmin, rateLimiter }) {
       textes: { missions: lire('missions', MISSIONS_DEFAUT), quiz: lire('quiz', QUIZ_DEFAUT), pronos: lire('pronos', PRONOS_DEFAUT) },
       missions: m.map((x) => ({ mission: x, photos: parMission[x] || 0 })),
       topPhotos,
+      commentaires: db.prepare(`SELECT c.id, c.auteur, c.texte, c.created_at AS le, p.fichier FROM photo_commentaires c
+        JOIN photos p ON p.id = c.photo_id ORDER BY c.id DESC LIMIT 200`).all().map((c) => ({ id: c.id, auteur: c.auteur, texte: c.texte, le: c.le, url: `/photos/f/${c.fichier}` })),
       cartes: db.prepare('SELECT * FROM cartes ORDER BY id DESC').all().map((c) => ({ ...carteOut(c), masquee: !!c.masquee })),
       playlist: listePlaylist(''),
       quiz: { questions: quizQs.length, joueurs: db.prepare('SELECT id, auteur, score, total, created_at AS le FROM quiz_reponses ORDER BY score DESC, created_at ASC').all() },
@@ -262,6 +280,7 @@ function monterAnimations({ app, admin, db, estAdmin, rateLimiter }) {
     db.prepare('UPDATE cartes SET masquee = ? WHERE id = ?').run(req.body && req.body.masquee ? 1 : 0, Number(req.params.id));
     res.json({ ok: true });
   });
+  admin.delete('/commentaires/:id', (req, res) => { db.prepare('DELETE FROM photo_commentaires WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });
   admin.delete('/cartes/:id', (req, res) => { db.prepare('DELETE FROM cartes WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });
   admin.delete('/playlist/:id', (req, res) => {
     const id = Number(req.params.id);
