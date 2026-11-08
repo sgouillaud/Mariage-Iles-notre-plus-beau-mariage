@@ -12,6 +12,7 @@ const { cleanRsvp, RsvpError } = require('./src/rsvp');
 const { cleanInfos } = require('./src/infos');
 const { COOKIE, MAX_AGE_MS, checkPassword, createToken, verifyToken, rateLimiter } = require('./src/auth');
 const { envoyerZip } = require('./src/zip');
+const { monterAnimations, NOMS: ANIMATIONS } = require('./src/animations');
 const { INVITE_COOKIE, INVITE_MAX_AGE_MS, createInviteToken, verifyInviteToken } = require('./src/invite');
 
 // Lecture d'un CSV « ; » (guillemets, retours à la ligne dans les cellules)
@@ -67,6 +68,16 @@ function createApp(options = {}) {
   app.disable('x-powered-by');
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
+  // Identifiant anonyme du téléphone (passeport des missions, un vote par téléphone, quiz joué une fois)
+  app.use((req, res, next) => {
+    let a = req.cookies.iles_appareil;
+    if (!/^[0-9a-f]{24}$/.test(a || '')) {
+      a = crypto.randomBytes(12).toString('hex');
+      res.cookie('iles_appareil', a, { httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: 2 * 365 * 24 * 3600 * 1000, path: '/' });
+    }
+    req.appareil = a;
+    next();
+  });
   app.use((req, res, next) => {
     res.set({
       'X-Content-Type-Options': 'nosniff',
@@ -125,12 +136,13 @@ function createApp(options = {}) {
   });
 
   // Partage de photos : fermé par défaut (« à venir »), ouvert depuis /admin → Photos
-  const photosOuvert = () => (db.prepare("SELECT value FROM settings WHERE key = 'photos_ouvert'").get() || {}).value === '1';
+  const ouvertDe = (nom) => (db.prepare('SELECT value FROM settings WHERE key = ?').get(`${nom}_ouvert`) || {}).value === '1';
+  const photosOuvert = () => ouvertDe('photos');
   const estAdmin = (req) => verifyToken(req.cookies[COOKIE], secret);
-  const LIEN_PHOTOS = '<a href="/photos">Photos</a>';
+  const LIEN_ESCALES = '<a href="/escales">Escales</a>';
   const sendIndex = (req, res) => {
     let html = withOrigin(indexTpl, req);
-    if (!photosOuvert()) html = html.replace(LIEN_PHOTOS, '<span class="nav-bientot" title="Bientôt disponible">Photos <small>à venir</small></span>');
+    if (!ANIMATIONS.some(ouvertDe)) html = html.replace(LIEN_ESCALES, '<span class="nav-bientot" title="Bientôt disponible">Escales <small>à venir</small></span>');
     res.type('html').send(html);
   };
   app.get('/', sendIndex);
@@ -138,6 +150,10 @@ function createApp(options = {}) {
   app.get('/admin', (req, res) => res.sendFile(path.join(pub, 'admin.html')));
   app.get('/photos', (req, res) => res.sendFile(path.join(pub, photosOuvert() || estAdmin(req) ? 'photos.html' : 'photos-bientot.html')));
   app.get('/diaporama', (req, res) => res.sendFile(path.join(pub, photosOuvert() || estAdmin(req) ? 'diaporama.html' : 'photos-bientot.html')));
+  app.get('/escales', (req, res) => res.sendFile(path.join(pub, 'escales.html')));
+  for (const [route, nom] of [['/cartes', 'cartes'], ['/playlist', 'playlist'], ['/quiz', 'quiz'], ['/pronostics', 'pronos']]) {
+    app.get(route, (req, res) => res.sendFile(path.join(pub, ouvertDe(nom) || estAdmin(req) ? `${route.slice(1)}.html` : 'escale-bientot.html')));
+  }
   app.use(express.static(pub, { index: false, maxAge: isProd ? '1h' : 0 }));
 
   // ---------- API publique ----------
@@ -174,7 +190,8 @@ function createApp(options = {}) {
   fs.mkdirSync(photosDir, { recursive: true });
   const photoLimiter = rateLimiter({ windowMs: 10 * 60 * 1000, max: options.photoRateMax ?? 80 });
   const MAX_PHOTO = 12 * 1024 * 1024;
-  const photoOut = (p) => ({ id: p.id, auteur: p.auteur, url: `/photos/f/${p.fichier}`, le: p.created_at });
+  const photoOut = (p) => ({ id: p.id, auteur: p.auteur, mission: p.mission || '', url: `/photos/f/${p.fichier}`, le: p.created_at,
+    coeurs: p.coeurs || 0, aime: !!p.aime });
   const lienPhotos = (req) => `${req.protocol}://${req.get('host')}/photos${guestCode ? '?code=' + encodeURIComponent(guestCode) : ''}`;
 
   const photosFerme = (req, res, next) => (photosOuvert() || estAdmin(req) ? next()
@@ -192,14 +209,18 @@ function createApp(options = {}) {
     let auteur = '';
     try { auteur = decodeURIComponent(String(req.get('X-Auteur') || '')); } catch { /* ignore */ }
     auteur = auteur.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 60);
+    let mission = '';
+    try { mission = decodeURIComponent(String(req.get('X-Mission') || '')).trim(); } catch { /* ignore */ }
+    if (mission && !((ouvertDe('missions') || estAdmin(req)) && anim.missions().includes(mission))) mission = '';
     const fichier = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${ext}`;
     fs.writeFileSync(path.join(photosDir, fichier), buf);
-    const info = db.prepare('INSERT INTO photos (fichier, auteur, taille) VALUES (?, ?, ?)').run(fichier, auteur, buf.length);
+    const info = db.prepare('INSERT INTO photos (fichier, auteur, taille, mission, appareil) VALUES (?, ?, ?, ?, ?)').run(fichier, auteur, buf.length, mission, req.appareil);
     res.json({ ok: true, id: info.lastInsertRowid });
   });
 
   app.get('/api/photos', (req, res) => {
-    const rows = db.prepare('SELECT * FROM photos WHERE masquee = 0 ORDER BY id DESC LIMIT 500').all();
+    const rows = db.prepare(`SELECT p.*, COUNT(v.appareil) AS coeurs, MAX(CASE WHEN v.appareil = ? THEN 1 ELSE 0 END) AS aime
+      FROM photos p LEFT JOIN photo_votes v ON v.photo_id = p.id WHERE p.masquee = 0 GROUP BY p.id ORDER BY p.id DESC LIMIT 500`).all(req.appareil);
     res.json({ photos: rows.map(photoOut) });
   });
 
@@ -259,6 +280,7 @@ function createApp(options = {}) {
 
   const admin = express.Router();
   admin.use(requireAdmin);
+  const anim = monterAnimations({ app, admin, db, estAdmin, rateLimiter });
 
   admin.get('/rsvps', (req, res) => {
     const rows = db.prepare('SELECT * FROM rsvps ORDER BY updated_at DESC, id DESC').all().map(rowOut);

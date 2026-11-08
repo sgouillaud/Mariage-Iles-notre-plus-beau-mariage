@@ -39,6 +39,7 @@
       <button class="onglet actif" data-tab="reponses" role="tab">Réponses</button>
       <button class="onglet" data-tab="infos" role="tab">Infos pratiques</button>
       <button class="onglet" data-tab="photos" role="tab">Photos</button>
+      <button class="onglet" data-tab="animations" role="tab">Animations</button>
       <button class="onglet" data-tab="exports" role="tab">Exports</button>
     </nav>
   </header>
@@ -105,6 +106,60 @@
       </div>
       <p class="intro" id="photos-resume"></p>
       <div id="photos-grille" class="photos-grille"></div>
+    </section>
+
+    <!-- ANIMATIONS -->
+    <section id="tab-animations" class="tab cache">
+      <div class="carte bloc">
+        <h2>Ouvrir les escales aux invités</h2>
+        <p class="petit">Une escale fermée affiche « à venir » aux invités. Vous, connectés ici, voyez tout pour tester. Page d’accueil des invités : <a href="/escales" target="_blank" rel="noopener">/escales ↗</a></p>
+        <div id="an-ouverts" class="an-ouverts"></div>
+      </div>
+
+      <div class="carte bloc">
+        <h2>🎯 Missions d’escale</h2>
+        <p class="petit">Une mission par ligne (emoji bienvenus). Les invités en choisissent une en envoyant leur photo et tamponnent leur passeport.</p>
+        <textarea id="an-missions" rows="8"></textarea>
+        <div class="actions"><button class="btn" data-save="missions">Enregistrer les missions</button></div>
+        <ul id="an-missions-stats" class="an-liste"></ul>
+      </div>
+
+      <div class="carte bloc">
+        <h2>❤ Photos les plus aimées</h2>
+        <div id="an-top" class="photos-grille"></div>
+      </div>
+
+      <div class="carte bloc">
+        <h2>💌 Cartes postales</h2>
+        <div class="actions"><a class="btn ghost" href="/api/admin/cartes.csv">Exporter (.csv)</a></div>
+        <div id="an-cartes"></div>
+      </div>
+
+      <div class="carte bloc">
+        <h2>🎶 Playlist</h2>
+        <div class="actions"><a class="btn" href="/api/admin/playlist.csv">Playlist pour le DJ (.csv)</a></div>
+        <ol id="an-playlist" class="an-liste"></ol>
+      </div>
+
+      <div class="carte bloc">
+        <h2>🧠 Quiz</h2>
+        <p class="petit">Une question par ligne : <code>Question ? | bonne réponse | autre réponse | autre réponse</code>. <b>La bonne réponse est toujours la première</b> : l’ordre est mélangé pour les invités. Les questions proposées sont des exemples tirés du site, ajoutez les vôtres (rencontre, voyages, manies…).</p>
+        <textarea id="an-quiz" rows="9"></textarea>
+        <div class="actions"><button class="btn" data-save="quiz">Enregistrer le quiz</button></div>
+        <h3 class="an-h3">Classement</h3>
+        <ol id="an-joueurs" class="an-liste"></ol>
+      </div>
+
+      <div class="carte bloc">
+        <h2>🔮 Pronostics</h2>
+        <p class="petit">Une question par ligne : <code>Question | choix 1 | choix 2 | choix 3</code>. Révélez les résultats pendant le dîner : les invités voient alors les pourcentages et ne peuvent plus voter.</p>
+        <textarea id="an-pronos" rows="7"></textarea>
+        <div class="actions">
+          <button class="btn" data-save="pronos">Enregistrer les pronostics</button>
+          <button class="btn ghost" id="an-reveler" type="button"></button>
+        </div>
+        <div id="an-pronos-res"></div>
+      </div>
     </section>
 
     <!-- EXPORTS -->

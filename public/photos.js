@@ -38,7 +38,7 @@
   async function envoyer(blob) {
     const r = await fetch('/api/photos', {
       method: 'POST', body: blob,
-      headers: { 'Content-Type': blob.type || 'image/jpeg', 'X-Auteur': encodeURIComponent(auteur.value.trim()) },
+      headers: { 'Content-Type': blob.type || 'image/jpeg', 'X-Auteur': encodeURIComponent(auteur.value.trim()), 'X-Mission': encodeURIComponent(mission) },
     });
     if (!r.ok) {
       const d = await r.json().catch(() => ({}));
@@ -80,7 +80,52 @@
       ? `${ok} photo${ok > 1 ? 's' : ''} envoyée${ok > 1 ? 's' : ''}, ${ko} en échec (${dernierMsg}).`
       : `Merci ! ${ok} photo${ok > 1 ? 's' : ''} envoyée${ok > 1 ? 's' : ''} ✈`;
     rafraichir();
+    if (ok && mission) toast_mission();
+    passeport();
   });
+
+  // ---------- Missions d'escale et cœurs ----------
+  const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let mission = '', missionsOn = false, coeursOn = false;
+  function toast_mission() {
+    const b = $('#file .bilan');
+    if (b && !b.classList.contains('err')) b.textContent += ' Mission accomplie : tampon ajouté à votre passeport 🛂';
+  }
+  async function passeport() {
+    if (!missionsOn) return;
+    try {
+      const r = await fetch('/api/missions/passeport', { cache: 'no-store' });
+      if (!r.ok) return;
+      const { missions } = await r.json();
+      const faites = missions.filter((m) => m.faite).length;
+      $('#passeport').hidden = false;
+      $('#tampons').innerHTML = missions.map((m) => `<div class="tamp${m.faite ? ' fait' : ''}">${esc(m.mission)}</div>`).join('');
+      $('#pp-compte').textContent = faites === missions.length ? `Passeport complet : ${faites} / ${missions.length} 🏆 Bravo, grand voyageur !` : `${faites} / ${missions.length} missions accomplies`;
+      document.querySelectorAll('.chip[data-m]').forEach((ch) => ch.classList.toggle('fait', !!missions.find((m) => m.mission === ch.dataset.m && m.faite)));
+    } catch (e) { /* hors ligne */ }
+  }
+  async function escales() {
+    try {
+      const r = await fetch('/api/escales', { cache: 'no-store' });
+      if (!r.ok) return;
+      const d = await r.json();
+      coeursOn = d.ouverts.coeurs || d.admin;
+      missionsOn = (d.ouverts.missions || d.admin) && d.missions.length > 0;
+      if (missionsOn) {
+        $('#missions').hidden = false;
+        $('#missions-chips').innerHTML = ['', ...d.missions].map((m) => `<button type="button" class="chip${m === '' ? ' on' : ''}" role="radio" aria-checked="${m === ''}" data-m="${esc(m)}">${m ? esc(m) : 'Pas de mission'}</button>`).join('');
+        $('#missions-chips').addEventListener('click', (e) => {
+          const b = e.target.closest('.chip'); if (!b) return;
+          mission = b.dataset.m;
+          document.querySelectorAll('.chip').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b); });
+        });
+        // Lien direct vers une mission : /photos#missions
+        if (location.hash === '#missions') $('#missions').scrollIntoView({ block: 'center' });
+        passeport();
+      }
+      signature = ''; rafraichir();
+    } catch (e) { /* ignore */ }
+  }
 
   // ---------- Album : toutes les photos, visionneuse et téléchargement ----------
   let album = [], courant = 0, signature = '';
@@ -93,11 +138,11 @@
       $('#vide').hidden = photos.length > 0;
       $('#tout').hidden = photos.length === 0;
       $('#compte').textContent = photos.length ? `${photos.length} photo${photos.length > 1 ? 's' : ''} · touchez une photo pour l’agrandir et l’enregistrer` : '';
-      const sig = photos.map((p) => p.id).join(',');
+      const sig = photos.map((p) => p.id + ':' + p.coeurs).join(',');
       if (sig === signature) return;
       signature = sig;
       $('#grille').innerHTML = photos
-        .map((p, i) => `<button type="button" data-i="${i}" aria-label="Agrandir la photo"><img src="${p.url}" alt="" loading="lazy"></button>`).join('');
+        .map((p, i) => `<button type="button" data-i="${i}" aria-label="Agrandir la photo"><img src="${p.url}" alt="" loading="lazy">${coeursOn && p.coeurs ? `<span class="ph-coeur">❤ ${p.coeurs}</span>` : ''}</button>`).join('');
     } catch (e) { /* hors ligne */ }
   }
   const v = $('#visionneuse');
@@ -106,7 +151,12 @@
     courant = (i + album.length) % album.length;
     const p = album[courant];
     $('#v-img').src = p.url;
-    $('#v-auteur').textContent = p.auteur ? `📷 ${p.auteur}` : '';
+    $('#v-auteur').innerHTML = (p.auteur ? `📷 ${esc(p.auteur)}` : '') + (p.mission ? `<em class="v-mission">🎯 ${esc(p.mission)}</em>` : '');
+    const c = $('#v-coeur');
+    c.hidden = !coeursOn;
+    c.classList.toggle('on', !!p.aime);
+    c.setAttribute('aria-pressed', p.aime ? 'true' : 'false');
+    c.querySelector('b').textContent = p.coeurs || 0;
     v.hidden = false;
     document.body.style.overflow = 'hidden';
   }
@@ -115,6 +165,17 @@
   v.querySelector('.v-fermer').addEventListener('click', fermer);
   v.querySelector('.v-prec').addEventListener('click', () => montrer(courant - 1));
   v.querySelector('.v-suiv').addEventListener('click', () => montrer(courant + 1));
+  $('#v-coeur').addEventListener('click', async () => {
+    const p = album[courant];
+    try {
+      const r = await fetch(`/api/photos/${p.id}/coeur`, { method: 'POST' });
+      const d = await r.json();
+      if (!r.ok) return;
+      p.coeurs = d.coeurs; p.aime = d.aime;
+      montrer(courant);
+      signature = ''; rafraichir();
+    } catch (e) { /* ignore */ }
+  });
   document.addEventListener('keydown', (e) => {
     if (v.hidden) return;
     if (e.key === 'Escape') fermer();
@@ -145,6 +206,6 @@
     a.href = p.url + '?dl=1'; a.download = '';
     document.body.appendChild(a); a.click(); a.remove();
   });
-  rafraichir();
+  escales();
   setInterval(rafraichir, 20000);
 })();

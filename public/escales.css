@@ -1,0 +1,118 @@
+/* Escales : animations des invités (complète photos.css) */
+textarea{font:16px/1.5 var(--sans);color:var(--encre);background:#fff;border:1.5px solid var(--ligne);border-radius:10px;padding:12px;width:100%;resize:vertical}
+textarea:focus{outline:none;border-color:var(--canard)}
+.carte .f{margin-top:14px}
+.carte .f:first-child{margin-top:0}
+p.f{display:block;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--encre-2);margin-bottom:6px}
+.btn:disabled{opacity:.6}
+.ph-head a img{margin:0 auto 12px;border-radius:50%}
+
+/* Message éphémère */
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,30px);background:var(--canard);color:#fff;font:500 15px var(--sans);padding:12px 20px;border-radius:99px;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:.3s;max-width:calc(100vw - 32px);text-align:center;z-index:60}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--err)}
+
+/* Accueil des escales */
+.hub{display:grid;gap:12px}
+.hub-carte{display:flex;gap:14px;align-items:flex-start;background:var(--papier);border:1px solid var(--ligne);border-radius:18px;padding:16px;text-decoration:none;color:var(--encre);transition:transform .15s,box-shadow .15s}
+a.hub-carte:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(31,92,91,.12)}
+.hub-carte.ferme{opacity:.72}
+.hub-ico{font-size:30px;line-height:1;flex:none;width:52px;height:52px;display:flex;align-items:center;justify-content:center;background:var(--sable);border-radius:14px}
+.hub-txt{display:flex;flex-direction:column;gap:4px}
+.hub-txt b{font-family:var(--serif);font-size:20px;color:var(--canard);font-weight:600}
+.hub-txt span{font-size:15px;color:var(--encre-2)}
+.etat{align-self:flex-start;font-size:11px!important;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--encre-2)!important;border:1px dashed var(--ligne);border-radius:99px;padding:3px 10px;margin-top:4px}
+.etat.ok{color:#fff!important;background:var(--terracotta);border-color:var(--terracotta)}
+.etat.apercu{color:var(--canard)!important;border-color:var(--canard)}
+
+/* Cartes postales */
+.timbres{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-bottom:6px}
+.timbre-choix{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:6px;background:#fff;border:2px dashed var(--ligne);text-align:center}
+.timbre-choix span{font-size:26px}
+.timbre-choix small{font-size:11px;font-weight:600;color:var(--canard)}
+.timbre-choix.on{border:2px solid var(--terracotta);background:#FDF1EA}
+.timbre-choix:focus-visible{outline:3px solid var(--canard);outline-offset:2px}
+.mur{display:grid;gap:14px}
+.postale{display:grid;grid-template-columns:1fr 112px;background:#FFFDF8;border-radius:6px;box-shadow:0 6px 20px rgba(43,36,32,.12);padding:16px;gap:14px;position:relative;border:1px solid #EFE4D2}
+.postale:nth-child(even){transform:rotate(.6deg)}
+.postale:nth-child(odd){transform:rotate(-.5deg)}
+.postale-g{border-right:1.5px solid var(--ligne);padding-right:14px;font-family:var(--serif);font-size:17px;line-height:1.5;color:var(--encre);overflow-wrap:anywhere}
+.postale-g .sign{margin-top:10px;font-style:italic;color:var(--terracotta)}
+.postale-d{display:flex;flex-direction:column;align-items:flex-end;gap:10px;position:relative}
+.timbre{display:flex;flex-direction:column;align-items:center;width:64px;padding:6px 2px;background:#fff;border:3px dotted var(--terracotta);outline:4px solid #fff}
+.timbre span{font-size:26px}
+.timbre small{font-size:9px;font-weight:600;color:var(--canard);text-align:center;line-height:1.1}
+.tampon{position:absolute;top:38px;right:46px;width:58px;height:58px;border:2px solid rgba(31,92,91,.45);border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font:600 10px/1.2 var(--sans);color:rgba(31,92,91,.6);transform:rotate(-14deg)}
+.adresse{margin-top:auto;font-size:11px;line-height:1.4;color:var(--encre-2);border-top:1px solid var(--ligne);padding-top:6px;width:100%}
+@media (max-width:420px){.postale{grid-template-columns:1fr 84px;padding:12px;gap:10px}.postale-g{font-size:16px;padding-right:10px}.tampon{display:none}.timbre{width:56px}}
+
+/* Playlist */
+.titres{list-style:none;display:grid;gap:8px;counter-reset:t}
+.titres li{display:flex;align-items:center;gap:12px;background:var(--papier);border:1px solid var(--ligne);border-radius:14px;padding:10px 12px;counter-increment:t}
+.titres li::before{content:counter(t);font:600 18px var(--serif);color:var(--terracotta);width:24px;text-align:center;flex:none}
+.t-txt{flex:1;display:flex;flex-direction:column;min-width:0}
+.t-txt b{font-weight:600;overflow-wrap:anywhere}
+.t-txt span{font-size:14px;color:var(--encre-2)}
+.t-txt small{font-size:12px;color:var(--encre-2);font-style:italic}
+.vote{all:unset;cursor:pointer;flex:none;display:flex;align-items:center;gap:6px;border:1.5px solid var(--ligne);border-radius:99px;padding:8px 14px;color:var(--encre-2);font:500 15px var(--sans)}
+.vote.on{background:var(--terracotta);border-color:var(--terracotta);color:#fff}
+.vote:focus-visible{outline:3px solid var(--canard);outline-offset:2px}
+
+/* Quiz */
+.q{border:0;margin-top:18px}
+.q legend{font-family:var(--serif);font-size:19px;color:var(--canard);display:flex;gap:10px;margin-bottom:8px;line-height:1.3}
+.q legend span{flex:none;width:28px;height:28px;border-radius:50%;background:var(--terracotta);color:#fff;font:600 14px var(--sans);display:flex;align-items:center;justify-content:center}
+.choix{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--ligne);border-radius:12px;padding:12px;margin-top:6px;cursor:pointer}
+.choix input{width:auto;accent-color:var(--terracotta)}
+.choix:has(input:checked){border-color:var(--terracotta);background:#FDF1EA}
+.q.juste legend span{background:var(--ok)}
+.q.faux legend span{background:var(--err)}
+.choix.bonne{border-color:var(--ok);background:#E9F5EF}
+.choix.bonne::after{content:"✓";margin-left:auto;color:var(--ok);font-weight:700}
+#resultat{text-align:center;margin-top:16px}
+.score{font:600 64px/1 var(--serif);color:var(--terracotta)}
+.score small{font-size:28px;color:var(--encre-2)}
+#resultat .sous{font-family:var(--serif);font-style:italic;margin-top:8px}
+.podium{list-style:none;display:grid;gap:6px}
+.podium li{display:flex;align-items:center;gap:12px;background:var(--papier);border:1px solid var(--ligne);border-radius:12px;padding:10px 14px}
+.podium li span{font-size:20px;width:28px;text-align:center}
+.podium li b{flex:1}
+.podium li em{font-style:normal;font-weight:600;color:var(--canard)}
+
+/* Pronostics */
+.pronos{display:grid;gap:12px}
+.prono h3{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--canard);margin-bottom:10px;line-height:1.3}
+.prono-choix{display:grid;gap:8px}
+.pc{all:unset;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--ligne);border-radius:12px;padding:12px 14px}
+.pc.on{border-color:var(--terracotta);background:#FDF1EA}
+.pc.on .pc-txt::before{content:"✓ ";color:var(--terracotta);font-weight:700}
+.pc:disabled{cursor:default}
+.pc .barre{position:absolute;left:0;top:0;bottom:0;background:rgba(192,100,62,.16);width:0;transition:width 1s ease}
+.pc-txt{position:relative;flex:1}
+.pc b{position:relative;color:var(--canard)}
+.pc:focus-visible{outline:3px solid var(--canard);outline-offset:2px}
+.bandeau{text-align:center;font:600 16px var(--sans);color:#fff;background:var(--terracotta);border-radius:14px;padding:12px}
+
+/* Missions (page photos) */
+.missions-bloc{margin-top:18px}
+.missions-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{all:unset;cursor:pointer;font:500 14px var(--sans);background:#fff;border:1.5px solid var(--ligne);border-radius:99px;padding:8px 12px;color:var(--encre)}
+.chip.on{background:var(--canard);border-color:var(--canard);color:#fff}
+.chip.fait::after{content:" ✓";color:var(--terracotta);font-weight:700}
+.chip.on.fait::after{color:#fff}
+.chip:focus-visible{outline:3px solid var(--terracotta);outline-offset:2px}
+.passeport{margin-top:26px;background:var(--canard);color:var(--creme);border-radius:18px;padding:20px}
+.passeport h2{color:var(--creme);font-size:22px}
+.passeport .pp-sous{font-size:14px;opacity:.85;margin-top:2px}
+.tampons{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:14px}
+.tamp{border:2px dashed rgba(245,237,224,.35);border-radius:14px;padding:12px 8px;text-align:center;font-size:13px;line-height:1.3;min-height:84px;display:flex;align-items:center;justify-content:center;opacity:.6}
+.tamp.fait{opacity:1;border:3px double var(--terracotta);background:rgba(245,237,224,.08);transform:rotate(-3deg);color:#fff;font-weight:500}
+.tamp.fait:nth-child(even){transform:rotate(2.5deg)}
+.pp-compte{margin-top:12px;font:600 16px var(--sans)}
+.ph-coeur{position:absolute;right:6px;bottom:6px;background:rgba(43,36,32,.55);color:#fff;font:600 12px var(--sans);border-radius:99px;padding:2px 8px;pointer-events:none}
+.grille button{position:relative}
+.v-coeur{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font:600 15px var(--sans);color:#fff;border:1.5px solid #fff;border-radius:99px;padding:8px 14px}
+.v-coeur.on{background:var(--terracotta);border-color:var(--terracotta)}
+.v-actions{display:flex;gap:8px;align-items:center}
+.v-mission{display:block;font-size:13px;font-style:normal;opacity:.85}
+.aide-inline{text-transform:none;letter-spacing:0;font-weight:400}

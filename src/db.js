@@ -66,6 +66,45 @@ function openDb(file) {
     );
   `);
   db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run('infos', JSON.stringify(DEFAULT_INFOS));
+
+  // Animations (missions, cœurs, cartes postales, playlist, quiz, pronostics)
+  const colonnes = db.prepare('PRAGMA table_info(photos)').all().map((c) => c.name);
+  if (!colonnes.includes('mission')) db.exec("ALTER TABLE photos ADD COLUMN mission TEXT NOT NULL DEFAULT ''");
+  if (!colonnes.includes('appareil')) db.exec("ALTER TABLE photos ADD COLUMN appareil TEXT NOT NULL DEFAULT ''");
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS photo_votes (
+      photo_id INTEGER NOT NULL, appareil TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (photo_id, appareil)
+    );
+    CREATE TABLE IF NOT EXISTS cartes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      auteur TEXT NOT NULL, message TEXT NOT NULL, timbre TEXT NOT NULL DEFAULT '',
+      appareil TEXT NOT NULL DEFAULT '', masquee INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS titres (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      titre TEXT NOT NULL, artiste TEXT NOT NULL DEFAULT '', cle TEXT NOT NULL UNIQUE,
+      auteur TEXT NOT NULL DEFAULT '', appareil TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS titre_votes (
+      titre_id INTEGER NOT NULL, appareil TEXT NOT NULL,
+      PRIMARY KEY (titre_id, appareil)
+    );
+    CREATE TABLE IF NOT EXISTS quiz_reponses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      appareil TEXT NOT NULL UNIQUE, auteur TEXT NOT NULL,
+      reponses TEXT NOT NULL, score INTEGER NOT NULL, total INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS prono_votes (
+      question TEXT NOT NULL, appareil TEXT NOT NULL, choix TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (question, appareil)
+    );
+  `);
   return db;
 }
 

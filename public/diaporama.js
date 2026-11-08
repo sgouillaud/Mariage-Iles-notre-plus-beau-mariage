@@ -77,7 +77,7 @@
     setTimeout(() => anciennes.forEach((a) => a.remove()), 1400);
     legTxt.classList.remove('on');
     setTimeout(() => {
-      legTxt.innerHTML = message(p);
+      legTxt.innerHTML = message(p) + (p.mission ? `<span class="leg-mission">🎯 Mission : ${esc(p.mission)}</span>` : '');
       requestAnimationFrame(() => legTxt.classList.add('on'));
     }, 350);
   }

@@ -34,6 +34,7 @@
     if (b.dataset.tab === 'infos') chargerInfos();
     if (b.dataset.tab === 'reponses') charger();
     if (b.dataset.tab === 'photos') chargerPhotos();
+    if (b.dataset.tab === 'animations') chargerAnimations();
   }));
 
   // ---------- Réponses ----------
@@ -276,5 +277,56 @@
       $('#import-res').textContent = `${d.ajoutees} réponse${d.ajoutees > 1 ? 's' : ''} restaurée${d.ajoutees > 1 ? 's' : ''}` + (d.deja ? `, ${d.deja} déjà présente${d.deja > 1 ? 's' : ''}.` : '.');
       charger();
     } catch (err) { $('#import-res').textContent = '⚠ ' + err.message; }
+  });
+
+  // ---------- Animations ----------
+  const NOMS_ANIM = { photos: '📸 Photos & diaporama', missions: '🎯 Missions d’escale', coeurs: '❤ Cœurs sur les photos', cartes: '💌 Cartes postales', playlist: '🎶 Playlist', quiz: '🧠 Quiz', pronos: '🔮 Pronostics' };
+  let pronosReveles = false;
+  async function chargerAnimations() {
+    let d;
+    try { d = await api('/api/admin/animations'); } catch (e) { return; }
+    $('#an-ouverts').innerHTML = Object.entries(NOMS_ANIM).map(([k, label]) => `
+      <div class="an-ligne"><span>${label}</span>
+      <button class="btn ${d.ouverts[k] ? '' : 'ghost'}" data-ouvrir="${k}" data-etat="${d.ouverts[k] ? 1 : 0}">${d.ouverts[k] ? 'Ouvert · fermer' : 'À venir · ouvrir'}</button></div>`).join('');
+    for (const k of ['missions', 'quiz', 'pronos']) if (document.activeElement !== $('#an-' + k)) $('#an-' + k).value = d.textes[k];
+    $('#an-missions-stats').innerHTML = d.missions.map((m) => `<li>${esc(m.mission)} <b>${m.photos} photo${m.photos > 1 ? 's' : ''}</b></li>`).join('');
+    $('#an-top').innerHTML = d.topPhotos.map((p) => `<figure class="ph"><a href="${p.url}" target="_blank" rel="noopener"><img src="${p.url}" alt="" loading="lazy"></a>
+      <figcaption>❤ ${p.coeurs} · ${esc(p.auteur || 'Anonyme')}<small>${esc(p.mission || '')}</small></figcaption></figure>`).join('') || '<p class="petit">Pas encore de cœurs.</p>';
+    $('#an-cartes').innerHTML = d.cartes.map((c) => `<div class="an-carte ${c.masquee ? 'masquee' : ''}">
+      <p>${esc(c.message).replace(/\n/g, '<br>')}</p><p class="petit">— ${esc(c.auteur)} · timbre ${esc(c.timbre)} · ${esc(c.le)}</p>
+      <div class="ph-actions"><button class="lien-s" data-carte-masquer="${c.id}" data-etat="${c.masquee ? 0 : 1}">${c.masquee ? 'Remettre' : 'Masquer'}</button>
+      <button class="lien-s rouge" data-carte-suppr="${c.id}">Supprimer</button></div></div>`).join('') || '<p class="petit">Aucune carte pour l’instant.</p>';
+    $('#an-playlist').innerHTML = d.playlist.map((t) => `<li><b>${esc(t.titre)}</b>${t.artiste ? ' · ' + esc(t.artiste) : ''} <span class="petit">(${t.votes} vote${t.votes > 1 ? 's' : ''}${t.auteur ? ', par ' + esc(t.auteur) : ''})</span>
+      <button class="lien-s rouge" data-titre-suppr="${t.id}">Retirer</button></li>`).join('') || '<li class="petit">Aucun titre proposé.</li>';
+    $('#an-joueurs').innerHTML = d.quiz.joueurs.map((j) => `<li><b>${esc(j.auteur)}</b> ${j.score} / ${j.total} <span class="petit">${esc(j.le)}</span>
+      <button class="lien-s rouge" data-joueur-suppr="${j.id}">Effacer (rejouer)</button></li>`).join('') || '<li class="petit">Personne n’a encore joué.</li>';
+    pronosReveles = d.pronos.revele;
+    $('#an-reveler').textContent = pronosReveles ? 'Cacher les résultats (rouvrir les votes)' : 'Révéler les résultats 🎉';
+    $('#an-pronos-res').innerHTML = d.pronos.questions.map((q) => {
+      const r = d.pronos.resultats[q.id] || {};
+      const tot = Object.values(r).reduce((a, b) => a + b, 0);
+      return `<div class="an-prono"><b>${esc(q.question)}</b> <span class="petit">(${tot} vote${tot > 1 ? 's' : ''})</span><ul>${q.choix.map((c) => `<li>${esc(c)} : ${r[c] || 0}${tot ? ` (${Math.round(((r[c] || 0) / tot) * 100)} %)` : ''}</li>`).join('')}</ul></div>`;
+    }).join('');
+    if (d.erreurs.length) alert(d.erreurs.join('\n'));
+  }
+  document.addEventListener('click', async (e) => {
+    const t = e.target;
+    const run = async (url, opts) => { try { await api(url, opts); } catch (er) { alert(er.message); } chargerAnimations(); };
+    if (t.dataset.ouvrir) {
+      const ouvrir = t.dataset.etat !== '1';
+      if (!confirm(`${ouvrir ? 'Ouvrir' : 'Fermer'} « ${NOMS_ANIM[t.dataset.ouvrir]} » ${ouvrir ? 'à tous les invités' : '(retour à « à venir »)'} ?`)) return;
+      return run('/api/admin/animations/ouvert', { method: 'PUT', body: JSON.stringify({ nom: t.dataset.ouvrir, ouvert: ouvrir }) });
+    }
+    if (t.dataset.save) {
+      const k = t.dataset.save;
+      try { await api('/api/admin/animations/textes', { method: 'PUT', body: JSON.stringify({ [k]: $('#an-' + k).value }) }); t.textContent = 'Enregistré ✓'; setTimeout(chargerAnimations, 800); }
+      catch (er) { alert(er.message); }
+      return;
+    }
+    if (t.id === 'an-reveler') return run('/api/admin/pronos-revele', { method: 'PUT', body: JSON.stringify({ revele: !pronosReveles }) });
+    if (t.dataset.carteMasquer) return run(`/api/admin/cartes/${t.dataset.carteMasquer}/masquer`, { method: 'POST', body: JSON.stringify({ masquee: t.dataset.etat === '1' }) });
+    if (t.dataset.carteSuppr && confirm('Supprimer cette carte postale ?')) return run(`/api/admin/cartes/${t.dataset.carteSuppr}`, { method: 'DELETE' });
+    if (t.dataset.titreSuppr && confirm('Retirer ce titre de la playlist ?')) return run(`/api/admin/playlist/${t.dataset.titreSuppr}`, { method: 'DELETE' });
+    if (t.dataset.joueurSuppr && confirm('Effacer ce score ? La personne pourra rejouer.')) return run(`/api/admin/quiz/${t.dataset.joueurSuppr}`, { method: 'DELETE' });
   });
 })();

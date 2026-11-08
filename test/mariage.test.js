@@ -162,7 +162,7 @@ test('Site privé : code invité requis, lien avec code, aperçu WhatsApp et adm
   assert.match((await request(app).get('/').set('Cookie', cookie)).text, /Cédric <em>&amp;<\/em> Sébastien/);
   r = await request(app).get('/?code=ILES2027');
   assert.equal(r.status, 302);
-  assert.ok(r.headers['set-cookie'][0].startsWith('iles_invite='));
+  assert.ok(r.headers['set-cookie'].some((x) => x.startsWith('iles_invite=')));
 });
 
 test('Chanson : jamais servie sans code invité, servie aux invités connectés', async () => {
@@ -198,7 +198,7 @@ test('Photos : envoi, liste, diaporama, modération et QR code', async () => {
   const a0 = await login(app);
   assert.match((await request(app).get('/photos').set('Cookie', a0)).text, /Partagez vos photos/);
   await request(app).put('/api/admin/photos-ouvert').set('Cookie', a0).send({ ouvert: true });
-  assert.match((await request(app).get('/').set('Cookie', c)).text, /<a href="\/photos">Photos<\/a>/);
+  assert.match((await request(app).get('/').set('Cookie', c)).text, /<a href="\/escales">Escales<\/a>/);
   assert.equal((await request(app).get('/photos').set('Cookie', c)).status, 200);
   assert.equal((await request(app).get('/diaporama').set('Cookie', c)).status, 200);
   // Fichier qui n'est pas une image : refusé
@@ -255,4 +255,81 @@ test('Restauration : réimport d’un export CSV, sans doublon', async () => {
   r = await request(app).post('/api/admin/import.csv').set('Cookie', c).set('Content-Type', 'text/csv').send('a;b\n1;2');
   assert.equal(r.status, 400);
   assert.equal((await request(app).post('/api/admin/import.csv').set('Content-Type', 'text/csv').send(csv)).status, 401);
+});
+
+test('Animations : fermées par défaut, puis missions, cœurs, cartes, playlist, quiz et pronostics', async () => {
+  const db = openDb(':memory:');
+  const app = createApp({ db, adminPassword: PWD, sessionSecret: 'x'.repeat(40), env: 'test', guestCode: 'Iles2027', photosDir: tmpPhotos() });
+  const agent = request.agent(app); // un invité avec son téléphone (cookies conservés)
+  await agent.get('/?code=Iles2027');
+  const autre = request.agent(app); // un deuxième invité
+  await autre.get('/?code=Iles2027');
+  // Fermé : « à venir »
+  assert.match((await agent.get('/')).text, /nav-bientot[^<]*>Escales/);
+  assert.match((await agent.get('/quiz')).text, /ouvre bientôt/);
+  assert.equal((await agent.post('/api/cartes').send({ auteur: 'Léa', message: 'Coucou' })).status, 403);
+  assert.equal((await agent.get('/api/escales')).body.missions.length, 0);
+  // Les mariés ouvrent tout
+  const a = await login(app);
+  for (const nom of ['photos', 'missions', 'coeurs', 'cartes', 'playlist', 'quiz', 'pronos']) {
+    assert.equal((await request(app).put('/api/admin/animations/ouvert').set('Cookie', a).send({ nom, ouvert: true })).status, 200);
+  }
+  assert.match((await agent.get('/')).text, /<a href="\/escales">Escales<\/a>/);
+  assert.match((await agent.get('/quiz')).text, /Connaissez-vous les mariés/);
+  // Missions : photo envoyée avec une mission → tampon au passeport de ce téléphone seulement
+  const m = (await agent.get('/api/escales')).body.missions;
+  assert.ok(m.length >= 5);
+  await agent.post('/api/photos').set('Content-Type', 'image/jpeg').set('X-Auteur', 'Léa').set('X-Mission', encodeURIComponent(m[0])).send(JPEG);
+  await agent.post('/api/photos').set('Content-Type', 'image/jpeg').set('X-Mission', encodeURIComponent('Mission inventée')).send(JPEG);
+  let pp = (await agent.get('/api/missions/passeport')).body.missions;
+  assert.equal(pp.filter((x) => x.faite).length, 1);
+  assert.equal((await autre.get('/api/missions/passeport')).body.missions.filter((x) => x.faite).length, 0);
+  const photos = (await agent.get('/api/photos')).body.photos;
+  assert.deepEqual(photos.map((p) => p.mission).sort(), ['', m[0]].sort());
+  // Cœurs : un par téléphone, re-toucher retire
+  const pid = photos[0].id;
+  assert.equal((await agent.post(`/api/photos/${pid}/coeur`)).body.coeurs, 1);
+  assert.equal((await autre.post(`/api/photos/${pid}/coeur`)).body.coeurs, 2);
+  assert.equal((await agent.post(`/api/photos/${pid}/coeur`)).body.coeurs, 1);
+  assert.equal((await autre.get('/api/photos')).body.photos.find((p) => p.id === pid).aime, true);
+  // Cartes postales
+  assert.equal((await agent.post('/api/cartes').send({ auteur: '', message: 'x' })).status, 400);
+  await agent.post('/api/cartes').send({ auteur: 'Léa <b>', message: 'Tous nos vœux\nde bonheur', timbre: 'Corse' });
+  const cartes = (await autre.get('/api/cartes')).body.cartes;
+  assert.equal(cartes.length, 1); assert.equal(cartes[0].timbre, 'Corse'); assert.equal(cartes[0].auteur, 'Léa b');
+  // Playlist : doublon fusionné, votes
+  await agent.post('/api/playlist').send({ titre: 'Laisse parler les gens', artiste: 'Dry', auteur: 'Léa' });
+  let pl = (await autre.post('/api/playlist').send({ titre: 'laisse parler les gens !', artiste: 'DRY' })).body;
+  assert.equal(pl.nouveau, false); assert.equal(pl.titres.length, 1); assert.equal(pl.titres[0].votes, 2);
+  pl = (await autre.post(`/api/playlist/${pl.titres[0].id}/vote`)).body;
+  assert.equal(pl.titres[0].votes, 1);
+  // Quiz : questions sans la bonne réponse, une seule tentative, score correct
+  const q = (await agent.get('/api/quiz')).body;
+  assert.equal(q.deja, false);
+  const textes = (await request(app).get('/api/admin/animations').set('Cookie', a)).body.textes;
+  const bonnes = Object.fromEntries(textes.quiz.split('\n').map((l) => l.split('|').map((x) => x.trim())).map((p) => [p[0], p[1]]));
+  const reponses = Object.fromEntries(q.questions.map((x, i) => [x.id, i === 0 ? 'faux' : bonnes[x.question]]));
+  const r = (await agent.post('/api/quiz').send({ auteur: 'Léa', reponses })).body;
+  assert.equal(r.score, q.questions.length - 1);
+  assert.equal((await agent.post('/api/quiz').send({ auteur: 'Léa', reponses })).status, 409);
+  assert.equal((await agent.get('/api/quiz')).body.deja, true);
+  // Pronostics : vote modifiable, puis révélation
+  const pr = (await agent.get('/api/pronos')).body;
+  await agent.post('/api/pronos').send({ question: pr.questions[0].id, choix: pr.questions[0].choix[0] });
+  await agent.post('/api/pronos').send({ question: pr.questions[0].id, choix: pr.questions[0].choix[1] });
+  await autre.post('/api/pronos').send({ question: pr.questions[0].id, choix: pr.questions[0].choix[1] });
+  assert.equal((await agent.post('/api/pronos').send({ question: pr.questions[0].id, choix: 'Nimporte' })).status, 400);
+  assert.equal((await agent.get('/api/pronos')).body.resultats, null);
+  await request(app).put('/api/admin/pronos-revele').set('Cookie', a).send({ revele: true });
+  const rev = (await autre.get('/api/pronos')).body;
+  assert.deepEqual(rev.resultats[pr.questions[0].id], { [pr.questions[0].choix[1]]: 2 });
+  assert.equal((await agent.post('/api/pronos').send({ question: pr.questions[0].id, choix: pr.questions[0].choix[0] })).status, 409);
+  // Admin : textes vérifiés, exports
+  assert.equal((await request(app).put('/api/admin/animations/textes').set('Cookie', a).send({ quiz: 'Question sans réponses' })).status, 400);
+  assert.equal((await request(app).put('/api/admin/animations/textes').set('Cookie', a).send({ missions: 'Danser 💃\nChanter 🎤' })).status, 200);
+  assert.deepEqual((await agent.get('/api/escales')).body.missions, ['Danser 💃', 'Chanter 🎤']);
+  const ad = (await request(app).get('/api/admin/animations').set('Cookie', a)).body;
+  assert.equal(ad.topPhotos[0].coeurs, 1); assert.equal(ad.quiz.joueurs.length, 1); assert.equal(ad.cartes.length, 1);
+  assert.match((await request(app).get('/api/admin/playlist.csv').set('Cookie', a)).text, /Laisse parler les gens;Dry;Léa/);
+  assert.equal((await agent.get('/api/admin/animations')).status, 401);
 });

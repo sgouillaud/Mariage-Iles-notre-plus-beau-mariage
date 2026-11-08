@@ -47,6 +47,11 @@ mariage-iles/
   sa réponse est mise à jour (pas de doublon). Un couple qui répond chacun de son côté avec le même email
   mais des prénoms différents apparaît en deux réponses.
 
+**Escales (`/escales`)** — animations, chacune « à venir » jusqu'à ce que vous l'ouvriez dans `/admin` → Animations :
+- Missions d'escale : défis photo choisis à l'envoi, passeport à tampons par téléphone, mission affichée sur le diaporama.
+- Cœurs sur les photos (un par téléphone), cartes postales (livre d'or timbré de nos îles), playlist votée (export pour le DJ),
+  quiz des mariés (une tentative par téléphone, classement), pronostics (résultats révélés pendant le dîner).
+
 **Pour vous (`/admin`)**
 - Chiffres clés : personnes confirmées, réponses, oui / non, personnes à loger,
   enfants, allergies, et nombre de personnes par moment (mairie, cérémonie, dîner, brunch).

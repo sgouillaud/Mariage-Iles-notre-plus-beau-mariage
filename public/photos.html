@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/photos.css">
+<link rel="stylesheet" href="/escales.css">
 </head>
 <body class="page-photos">
 <header class="ph-head">
@@ -24,11 +25,22 @@
   <form id="envoi" class="carte">
     <label class="f" for="auteur">Votre prénom</label>
     <input id="auteur" maxlength="60" autocomplete="given-name" placeholder="Pour savoir qui a pris la photo">
+    <div id="missions" class="missions-bloc" hidden>
+      <p class="f">Une mission ? <span class="aide-inline">(facultatif)</span></p>
+      <div id="missions-chips" class="missions-chips" role="radiogroup" aria-label="Mission photo"></div>
+    </div>
     <input id="fichiers" type="file" accept="image/*" multiple class="cache-input">
     <label for="fichiers" class="btn btn-primary gros">📷 Choisir ou prendre des photos</label>
     <div id="file" class="file" aria-live="polite"></div>
     <p class="aide">Vous pouvez en choisir plusieurs d'un coup. Elles sont envoyées une par une, gardez la page ouverte jusqu'à la fin.</p>
   </form>
+
+  <section id="passeport" class="passeport" hidden>
+    <h2>🛂 Mon passeport Il.e.s</h2>
+    <p class="pp-sous">Chaque mission réussie tamponne votre passeport (sur ce téléphone).</p>
+    <div id="tampons" class="tampons"></div>
+    <p id="pp-compte" class="pp-compte"></p>
+  </section>
 
   <section class="dernieres">
     <div class="titre-ligne">
@@ -39,7 +51,7 @@
     <div id="grille" class="grille"></div>
     <p id="vide" class="aide">Aucune photo pour l'instant : soyez le premier !</p>
   </section>
-  <p class="retour"><a href="/">← Retour au site</a></p>
+  <p class="retour"><a href="/escales">← Toutes les escales</a> · <a href="/">Le site</a></p>
 </main>
 <div id="visionneuse" class="visionneuse" hidden>
   <button class="v-fermer" type="button" aria-label="Fermer">✕</button>
@@ -48,7 +60,10 @@
   <button class="v-suiv" type="button" aria-label="Photo suivante">›</button>
   <div class="v-bas">
     <span id="v-auteur"></span>
-    <button id="v-garder" class="btn-mini clair" type="button">⬇ Enregistrer</button>
+    <span class="v-actions">
+      <button id="v-coeur" class="v-coeur" type="button" hidden aria-pressed="false">❤ <b>0</b></button>
+      <button id="v-garder" class="btn-mini clair" type="button">⬇ Enregistrer</button>
+    </span>
   </div>
 </div>
 <script src="/photos.js" defer></script>

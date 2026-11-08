@@ -124,3 +124,15 @@ main{padding:22px 0 60px}
 .alerte{background:#FBE3DF;border:2px solid #B3261E;color:#7A1A14;border-radius:14px;padding:14px 18px;margin:0 0 18px;font-size:15px;line-height:1.5}
 .alerte[hidden]{display:none}
 .cache-fichier{position:absolute;width:1px;height:1px;opacity:0}
+
+/* Animations */
+.an-ouverts{display:grid;gap:8px;margin-top:10px}
+.an-ligne{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--ligne);padding:6px 0;flex-wrap:wrap}
+.tab textarea{width:100%;font:14px/1.5 ui-monospace,Menlo,monospace;border:1.5px solid var(--ligne);border-radius:10px;padding:10px;margin-top:8px}
+.an-liste{margin:10px 0 0 20px;display:grid;gap:6px;font-size:15px}
+.an-liste li .lien-s{margin-left:8px}
+.an-h3{margin-top:18px;font-size:17px}
+.an-carte{border:1px solid var(--ligne);border-radius:12px;padding:10px 12px;margin-top:10px;background:#fff}
+.an-carte.masquee{opacity:.45}
+.an-prono{margin-top:12px}
+.an-prono ul{margin:4px 0 0 20px;font-size:15px}

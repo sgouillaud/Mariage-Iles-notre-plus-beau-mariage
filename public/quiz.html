@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex">
+<title>Il.e.s · Quiz</title>
+<link rel="icon" href="/logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/photos.css">
+<link rel="stylesheet" href="/escales.css">
+</head>
+<body class="page-photos" data-page="quiz">
+<header class="ph-head">
+  <a href="/escales"><img src="/logo.webp" alt="Il.e.s" width="84" height="84"></a>
+  <p class="eyebrow">Jeu</p>
+  <h1>Connaissez-vous les mariés ? 🧠</h1>
+  <p class="sous">Une seule tentative par téléphone. Le meilleur score repart avec une surprise le jour J !</p>
+</header>
+<main class="ph-wrap">
+  <form id="f-quiz" class="carte" hidden>
+    <label class="f" for="q-auteur">Votre prénom (pour le classement)</label>
+    <input id="q-auteur" maxlength="60" autocomplete="given-name" required>
+    <div id="questions"></div>
+    <button class="btn" type="submit">Valider mes réponses ✈</button>
+  </form>
+  <section id="resultat" class="carte" hidden></section>
+  <section id="classement" class="dernieres" hidden>
+    <h2>Le classement</h2>
+    <ol id="podium" class="podium"></ol>
+  </section>
+  <p class="retour"><a href="/escales">← Toutes les escales</a> · <a href="/">Le site</a></p>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/escales.js" defer></script>
+</body>
+</html>

@@ -92,3 +92,4 @@ input:focus{outline:none;border-color:var(--canard)}
   .legende{bottom:auto;top:2.5vh;left:calc(2.5vw + clamp(80px,9vw,150px) + 12px);right:2.5vw;max-width:none}
   .leg-txt{font-size:clamp(15px,4.2vw,26px)}
 }
+.leg-mission{display:block;font-family:var(--sans);font-size:.62em;font-weight:500;color:var(--terracotta);margin-top:.35em;letter-spacing:.02em}
